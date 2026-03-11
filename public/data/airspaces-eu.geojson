@@ -1,0 +1,39 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Frankfurt CTR",
+        "type": "CTR",
+        "lower": "SFC",
+        "upper": "FL050"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [8.3, 49.9], [8.8, 49.9], [8.8, 50.2], [8.3, 50.2], [8.3, 49.9]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "ED-R 14 (Restricted)",
+        "type": "Restricted",
+        "lower": "SFC",
+        "upper": "FL100"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [9.0, 50.0], [9.2, 50.0], [9.2, 50.2], [9.0, 50.2], [9.0, 50.0]
+          ]
+        ]
+      }
+    }
+  ]
+}
