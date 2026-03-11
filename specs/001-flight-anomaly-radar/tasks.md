@@ -297,3 +297,21 @@ Phase 9 (US7: System Health)        # Independent — only needs status indicato
 - Verify tests fail before implementing (TDD per constitution)
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently
+
+---
+
+## Implementation Log (2026-03-11)
+**What we did**: 
+- Scaffolded project with Vite, React, Tailwind v4, Zustand, and React-Leaflet.
+- Built foundational logic (formatters, data transformers, anomaly engine, tests).
+- Created the Supabase Edge Function proxy for OpenSky data with caching and bounding box filtering.
+- Implemented User Stories 1 through 8 covering: Live map monitoring, anomaly alerts with audio, collapsible Alert Sidebar, region selection, airspace GeoJSON overlays, statistics dashboard, and mobile responsiveness.
+- Added visual polish, including a CSS radar sweep animation, ATC-dark theme, and Vercel configuration.
+- Successfully verified the production build.
+
+**What we should do next**:
+- Check component re-rendering behavior and optimize `React-Leaflet` rendering loops if map performance drops under heavy load.
+- Connect the GitHub repository to Vercel for continuous deployment.
+- Provide real `OPENSKY_CLIENT_ID` and `OPENSKY_CLIENT_SECRET` to the production Supabase vault.
+- Update `public/data/airspaces-eu.geojson` and `airspaces-mena.geojson` with real complex geometries instead of the current testing mock data.
+- Run the Supabase SQL migration against the production Supabase database to stand up the `anomaly_log` table.
