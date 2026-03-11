@@ -19,15 +19,15 @@
 
 **Purpose**: Project scaffolding and core configuration
 
-- [ ] T001 Scaffold React + Vite project with `npx create-vite@latest ./ -- --template react` in project root
-- [ ] T002 Install core dependencies: `react-leaflet leaflet zustand recharts lucide-react @supabase/supabase-js`
-- [ ] T003 Install dev dependencies: `tailwindcss @tailwindcss/vite vitest`
-- [ ] T004 [P] Configure Vite with Tailwind CSS 4 plugin in `vite.config.js`
-- [ ] T005 [P] Create ATC dark scope theme with CSS custom properties in `src/styles/globals.css`
-- [ ] T006 [P] Add Google Fonts (JetBrains Mono + DM Sans) to `index.html`
-- [ ] T007 [P] Create `.env.local` with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` placeholders
-- [ ] T008 [P] Create `src/app/layout.jsx` root layout component with font classes and meta tags
-- [ ] T009 Initialize Supabase Edge Function directory structure at `supabase/functions/opensky-proxy/index.ts`
+- [x] T001 Scaffold React + Vite project with `npx create-vite@latest ./ -- --template react` in project root
+- [x] T002 Install core dependencies: `react-leaflet leaflet zustand recharts lucide-react @supabase/supabase-js`
+- [x] T003 Install dev dependencies: `tailwindcss @tailwindcss/vite vitest`
+- [x] T004 [P] Configure Vite with Tailwind CSS 4 plugin in `vite.config.js`
+- [x] T005 [P] Create ATC dark scope theme with CSS custom properties in `src/styles/globals.css`
+- [x] T006 [P] Add Google Fonts (JetBrains Mono + DM Sans) to `index.html`
+- [x] T007 [P] Create `.env.local` with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` placeholders
+- [x] T008 [P] Create `src/app/layout.jsx` root layout component with font classes and meta tags
+- [x] T009 Initialize Supabase Edge Function directory structure at `supabase/functions/opensky-proxy/index.ts`
 
 ---
 
@@ -39,19 +39,19 @@
 
 ### Tests for Foundational Phase
 
-- [ ] T010 [P] Write unit tests for formatters (m→ft, m/s→kts, m/s→ft/min) in `tests/unit/formatters.test.js`
-- [ ] T011 [P] Write unit tests for anomaly rules (all 6 rules with edge cases) in `tests/unit/anomalyRules.test.js`
-- [ ] T012 [P] Write unit tests for data transformer (OpenSky array → Aircraft model) in `tests/unit/transformers.test.js`
+- [x] T010 [P] Write unit tests for formatters (m→ft, m/s→kts, m/s→ft/min) in `tests/unit/formatters.test.js`
+- [x] T011 [P] Write unit tests for anomaly rules (all 6 rules with edge cases) in `tests/unit/anomalyRules.test.js`
+- [x] T012 [P] Write unit tests for data transformer (OpenSky array → Aircraft model) in `tests/unit/transformers.test.js`
 
 ### Implementation for Foundational Phase
 
-- [ ] T013 [P] Implement unit conversion utilities (metersToFeet, msToKnots, msToFtPerMin) in `src/lib/formatters.js`
-- [ ] T014 [P] Implement region presets and constants (REGIONS, DEFAULT_REGION, POLL_INTERVAL_MS, MAX_ANOMALY_HISTORY) in `src/lib/constants.js`
-- [ ] T015 [P] Implement anomaly detection rules array with priority order in `src/lib/anomalyRules.js`
-- [ ] T016 Implement OpenSky data transformer (raw state array → Aircraft model) in `src/lib/transformers.js`
-- [ ] T017 Implement Zustand store (aircraft, anomalies, selectedRegion, selectedAircraft, connectionStatus, isMuted) in `src/store/flightStore.js`
-- [ ] T018 Build OpenSky proxy Edge Function with OAuth2, caching (15s TTL), CORS, and region-based bounding box in `supabase/functions/opensky-proxy/index.ts`
-- [ ] T019 Run Vitest to verify all unit tests pass: `npm run test`
+- [x] T013 [P] Implement unit conversion utilities (metersToFeet, msToKnots, msToFtPerMin) in `src/lib/formatters.js`
+- [x] T014 [P] Implement region presets and constants (REGIONS, DEFAULT_REGION, POLL_INTERVAL_MS, MAX_ANOMALY_HISTORY) in `src/lib/constants.js`
+- [x] T015 [P] Implement anomaly detection rules array with priority order in `src/lib/anomalyRules.js`
+- [x] T016 Implement OpenSky data transformer (raw state array → Aircraft model) in `src/lib/transformers.js`
+- [x] T017 Implement Zustand store (aircraft, anomalies, selectedRegion, selectedAircraft, connectionStatus, isMuted) in `src/store/flightStore.js`
+- [x] T018 Build OpenSky proxy Edge Function with OAuth2, caching (15s TTL), CORS, and region-based bounding box in `supabase/functions/opensky-proxy/index.ts`
+- [x] T019 Run Vitest to verify all unit tests pass: `npm run test`
 
 **Checkpoint**: Foundation ready — core logic, state store, and proxy function complete. User story implementation can begin.
 
@@ -65,15 +65,15 @@
 
 ### Implementation for User Story 1
 
-- [ ] T020 [US1] Implement `useOpenSky` hook with polling, region-scoped fetching, error handling, degraded mode (60s on rate limit), and 60s staleness cleanup in `src/hooks/useOpenSky.js`
-- [ ] T021 [US1] Build `TraconMap` component with dark CartoDB tiles, canvas renderer, and region-controlled viewport in `src/components/map/TraconMap.jsx`
-- [ ] T022 [US1] Build `AircraftLayer` component rendering aircraft as canvas dots colored by state (normal=teal, hover=cyan) in `src/components/map/AircraftLayer.jsx`
-- [ ] T023 [US1] Build `AircraftDetail` panel showing callsign, ICAO24, country, altitude, speed, heading, vertical rate, squawk, source, and last seen in `src/components/panels/AircraftDetail.jsx`
-- [ ] T024 [US1] Build `Header` component with logo, live/offline/degraded `StatusIndicator`, aircraft count, and mute toggle in `src/components/ui/Header.jsx` and `src/components/ui/StatusIndicator.jsx`
-- [ ] T025 [US1] Assemble the main page layout (Header + Map + AircraftDetail) in `src/app/page.jsx`
-- [ ] T026 [US1] Wire `useOpenSky` hook → Zustand store → `AircraftLayer` data flow in `src/app/page.jsx`
-- [ ] T027 [US1] Add footer disclaimer "For informational purposes only. Not for operational use." in `src/app/layout.jsx`
-- [ ] T028 [US1] Handle edge cases: no-callsign fallback (ICAO24), null position (skip render), zero aircraft ("No aircraft in range"), connection failures (>3 → OFFLINE status)
+- [x] T020 [US1] Implement `useOpenSky` hook with polling, region-scoped fetching, error handling, degraded mode (60s on rate limit), and 60s staleness cleanup in `src/hooks/useOpenSky.js`
+- [x] T021 [US1] Build `TraconMap` component with dark CartoDB tiles, canvas renderer, and region-controlled viewport in `src/components/map/TraconMap.jsx`
+- [x] T022 [US1] Build `AircraftLayer` component rendering aircraft as canvas dots colored by state (normal=teal, hover=cyan) in `src/components/map/AircraftLayer.jsx`
+- [x] T023 [US1] Build `AircraftDetail` panel showing callsign, ICAO24, country, altitude, speed, heading, vertical rate, squawk, source, and last seen in `src/components/panels/AircraftDetail.jsx`
+- [x] T024 [US1] Build `Header` component with logo, live/offline/degraded `StatusIndicator`, aircraft count, and mute toggle in `src/components/ui/Header.jsx` and `src/components/ui/StatusIndicator.jsx`
+- [x] T025 [US1] Assemble the main page layout (Header + Map + AircraftDetail) in `src/app/page.jsx`
+- [x] T026 [US1] Wire `useOpenSky` hook → Zustand store → `AircraftLayer` data flow in `src/app/page.jsx`
+- [x] T027 [US1] Add footer disclaimer "For informational purposes only. Not for operational use." in `src/app/layout.jsx`
+- [x] T028 [US1] Handle edge cases: no-callsign fallback (ICAO24), null position (skip render), zero aircraft ("No aircraft in range"), connection failures (>3 → OFFLINE status)
 
 **Checkpoint**: User Story 1 complete — live aircraft on dark map with click-to-inspect. This is the MVP.
 
@@ -87,11 +87,11 @@
 
 ### Implementation for User Story 2
 
-- [ ] T029 [US2] Implement `useAnomalyEngine` hook that processes aircraft array through prioritized rules on each refresh in `src/hooks/useAnomalyEngine.js`
-- [ ] T030 [US2] Build `AnomalyMarker` component with pulsing red/orange dot and glow animation for anomalous aircraft in `src/components/map/AnomalyMarker.jsx`
-- [ ] T031 [US2] Update `AircraftLayer` to render anomalous aircraft with severity-coded colors (critical=red, high=orange, medium=yellow, low=blue) in `src/components/map/AircraftLayer.jsx`
-- [ ] T032 [US2] Implement audio alert system for CRITICAL anomalies with mute toggle integration in `src/hooks/useAnomalyEngine.js`
-- [ ] T033 [US2] Wire anomaly engine into data pipeline: useOpenSky → useAnomalyEngine → flightStore → AircraftLayer/AnomalyMarker
+- [x] T029 [US2] Implement `useAnomalyEngine` hook that processes aircraft array through prioritized rules on each refresh in `src/hooks/useAnomalyEngine.js`
+- [x] T030 [US2] Build `AnomalyMarker` component with pulsing red/orange dot and glow animation for anomalous aircraft in `src/components/map/AnomalyMarker.jsx`
+- [x] T031 [US2] Update `AircraftLayer` to render anomalous aircraft with severity-coded colors (critical=red, high=orange, medium=yellow, low=blue) in `src/components/map/AircraftLayer.jsx`
+- [x] T032 [US2] Implement audio alert system for CRITICAL anomalies with mute toggle integration in `src/hooks/useAnomalyEngine.js`
+- [x] T033 [US2] Wire anomaly engine into data pipeline: useOpenSky → useAnomalyEngine → flightStore → AircraftLayer/AnomalyMarker
 
 **Checkpoint**: User Story 2 complete — anomalies detected and visually highlighted on map with audio for critical.
 
@@ -105,11 +105,11 @@
 
 ### Implementation for User Story 3
 
-- [ ] T034 [US3] Build `AlertSidebar` component with scrollable feed, severity color badges, callsign, anomaly label, altitude, vertical rate, UTC timestamp in `src/components/panels/AlertSidebar.jsx`
-- [ ] T035 [US3] Implement click-on-alert: center map on aircraft and open detail panel, connected via Zustand store
-- [ ] T036 [US3] Implement 50-entry cap with oldest-first eviction in Zustand anomaly history slice in `src/store/flightStore.js`
-- [ ] T037 [US3] Update main page layout to include AlertSidebar in right panel in `src/app/page.jsx`
-- [ ] T038 [US3] Implement anomaly logging to Supabase `anomaly_log` table (global scope, all regions) via Supabase JS client
+- [x] T034 [US3] Build `AlertSidebar` component with scrollable feed, severity color badges, callsign, anomaly label, altitude, vertical rate, UTC timestamp in `src/components/panels/AlertSidebar.jsx`
+- [x] T035 [US3] Implement click-on-alert: center map on aircraft and open detail panel, connected via Zustand store
+- [x] T036 [US3] Implement 50-entry cap with oldest-first eviction in Zustand anomaly history slice in `src/store/flightStore.js`
+- [x] T037 [US3] Update main page layout to include AlertSidebar in right panel in `src/app/page.jsx`
+- [x] T038 [US3] Implement anomaly logging to Supabase `anomaly_log` table (global scope, all regions) via Supabase JS client
 
 **Checkpoint**: User Story 3 complete — live alert feed sidebar with click-to-locate and persistent anomaly logging.
 
@@ -123,9 +123,9 @@
 
 ### Implementation for User Story 4
 
-- [ ] T039 [US4] Build `RegionSelector` component with styled buttons for each preset region from constants in `src/components/panels/RegionSelector.jsx`
-- [ ] T040 [US4] Wire region selection to Zustand store → useOpenSky (re-fetch) + TraconMap (pan/zoom) in `src/store/flightStore.js`
-- [ ] T041 [US4] Add RegionSelector to header or sub-header area in `src/app/page.jsx`
+- [x] T039 [US4] Build `RegionSelector` component with styled buttons for each preset region from constants in `src/components/panels/RegionSelector.jsx`
+- [x] T040 [US4] Wire region selection to Zustand store → useOpenSky (re-fetch) + TraconMap (pan/zoom) in `src/store/flightStore.js`
+- [x] T041 [US4] Add RegionSelector to header or sub-header area in `src/app/page.jsx`
 
 **Checkpoint**: User Story 4 complete — region presets work, map re-centers, data re-scopes.
 
@@ -139,10 +139,10 @@
 
 ### Implementation for User Story 5
 
-- [ ] T042 [P] [US5] Prepare and add airspace GeoJSON files for Europe and MENA to `public/data/airspaces-eu.geojson` and `public/data/airspaces-mena.geojson`
-- [ ] T043 [US5] Implement `useAirspaceData` hook to load GeoJSON files based on selected region in `src/hooks/useAirspaceData.js`
-- [ ] T044 [US5] Build `AirspaceLayer` component rendering GeoJSON polygons with type-coded fills (CTR=cyan, TMA=amber, Restricted=red, FIR=white) and hover tooltips in `src/components/map/AirspaceLayer.jsx`
-- [ ] T045 [US5] Integrate AirspaceLayer into TraconMap in `src/components/map/TraconMap.jsx`
+- [x] T042 [P] [US5] Prepare and add airspace GeoJSON files for Europe and MENA to `public/data/airspaces-eu.geojson` and `public/data/airspaces-mena.geojson`
+- [x] T043 [US5] Implement `useAirspaceData` hook to load GeoJSON files based on selected region in `src/hooks/useAirspaceData.js`
+- [x] T044 [US5] Build `AirspaceLayer` component rendering GeoJSON polygons with type-coded fills (CTR=cyan, TMA=amber, Restricted=red, FIR=white) and hover tooltips in `src/components/map/AirspaceLayer.jsx`
+- [x] T045 [US5] Integrate AirspaceLayer into TraconMap in `src/components/map/TraconMap.jsx`
 
 **Checkpoint**: User Story 5 complete — airspace polygons visible on map with color-coded fills and tooltips.
 
@@ -156,9 +156,9 @@
 
 ### Implementation for User Story 6
 
-- [ ] T046 [US6] Build `StatsPanel` component with aircraft count display and Recharts altitude histogram in `src/components/panels/StatsPanel.jsx`
-- [ ] T047 [US6] Add region breakdown chart (bar chart by country or origin) in `src/components/panels/StatsPanel.jsx`
-- [ ] T048 [US6] Wire StatsPanel to Zustand store aircraft data and integrate into main page layout in `src/app/page.jsx`
+- [x] T046 [US6] Build `StatsPanel` component with aircraft count display and Recharts altitude histogram in `src/components/panels/StatsPanel.jsx`
+- [x] T047 [US6] Add region breakdown chart (bar chart by country or origin) in `src/components/panels/StatsPanel.jsx`
+- [x] T048 [US6] Wire StatsPanel to Zustand store aircraft data and integrate into main page layout in `src/app/page.jsx`
 
 **Checkpoint**: User Story 6 complete — live stats panel with charts updating on each data refresh.
 
@@ -172,8 +172,8 @@
 
 ### Implementation for User Story 7
 
-- [ ] T049 [US7] Enhance `StatusIndicator` to show last refresh timestamp and transition between LIVE/OFFLINE/DEGRADED states based on connection errors and rate limit status in `src/components/ui/StatusIndicator.jsx`
-- [ ] T050 [US7] Implement connection failure tracking (>3 consecutive failures → OFFLINE, rate limit → DEGRADED) in `src/hooks/useOpenSky.js`
+- [x] T049 [US7] Enhance `StatusIndicator` to show last refresh timestamp and transition between LIVE/OFFLINE/DEGRADED states based on connection errors and rate limit status in `src/components/ui/StatusIndicator.jsx`
+- [x] T050 [US7] Implement connection failure tracking (>3 consecutive failures → OFFLINE, rate limit → DEGRADED) in `src/hooks/useOpenSky.js`
 
 **Checkpoint**: User Story 7 complete — system health fully visible in header.
 
@@ -187,10 +187,10 @@
 
 ### Implementation for User Story 8
 
-- [ ] T051 [US8] Add responsive CSS breakpoints (<768px) for full-screen map layout in `src/styles/globals.css`
-- [ ] T052 [US8] Convert AlertSidebar to a collapsible drawer with slide-in animation on mobile in `src/components/panels/AlertSidebar.jsx`
-- [ ] T053 [US8] Add sidebar toggle button visible only on mobile viewports in `src/components/ui/Header.jsx`
-- [ ] T054 [US8] Test responsive layout at 375px, 414px, and 768px breakpoints
+- [x] T051 [US8] Add responsive CSS breakpoints (<768px) for full-screen map layout in `src/styles/globals.css`
+- [x] T052 [US8] Convert AlertSidebar to a collapsible drawer with slide-in animation on mobile in `src/components/panels/AlertSidebar.jsx`
+- [x] T053 [US8] Add sidebar toggle button visible only on mobile viewports in `src/components/ui/Header.jsx`
+- [x] T054 [US8] Test responsive layout at 375px, 414px, and 768px breakpoints
 
 **Checkpoint**: User Story 8 complete — application is fully usable on mobile.
 
@@ -200,15 +200,15 @@
 
 **Purpose**: Visual polish, performance, and deployment readiness
 
-- [ ] T055 [P] Build CSS radar sweep animation component in `src/components/ui/RadarSweep.jsx`
-- [ ] T056 [P] Create favicon and OG social preview image for LinkedIn/Twitter sharing in `public/`
-- [ ] T057 [P] Add meta tags (title, description, OG image, Twitter card) in `index.html`
-- [ ] T058 [P] Prepare filtered airports JSON data file in `public/data/airports.json`
-- [ ] T059 Performance optimization: verify canvas rendering handles 5,000 aircraft dots smoothly
-- [ ] T060 Add Supabase database migration SQL for `anomaly_log` table in `supabase/migrations/`
-- [ ] T061 [P] Update README.md with project description, screenshots, setup instructions, and tech stack
-- [ ] T062 Configure Vercel deployment and environment variables
-- [ ] T063 Final build verification: `npm run build` and `npm run preview`
+- [x] T055 [P] Build CSS radar sweep animation component in `src/components/ui/RadarSweep.jsx`
+- [x] T056 [P] Create favicon and OG social preview image for LinkedIn/Twitter sharing in `public/`
+- [x] T057 [P] Add meta tags (title, description, OG image, Twitter card) in `index.html`
+- [x] T058 [P] Prepare filtered airports JSON data file in `public/data/airports.json`
+- [x] T059 Performance optimization: verify canvas rendering handles 5,000 aircraft dots smoothly
+- [x] T060 Add Supabase database migration SQL for `anomaly_log` table in `supabase/migrations/`
+- [x] T061 [P] Update README.md with project description, screenshots, setup instructions, and tech stack
+- [x] T062 Configure Vercel deployment and environment variables
+- [x] T063 Final build verification: `npm run build` and `npm run preview`
 
 ---
 
