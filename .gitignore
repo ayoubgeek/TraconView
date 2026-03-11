@@ -1,0 +1,19 @@
+# AI/Agent local files
+.agent/
+.speckit/
+.cursor/
+.cursorrules
+.cline/
+.aider*
+.env
+.env.*
+!.env.example
+
+# standard node
+node_modules/
+dist/
+build/
+.DS_Store
+coverage/
+.vercel
+.specify/
