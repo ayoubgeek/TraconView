@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+@theme {
+  --color-radar-bg: #0B101E;
+  --color-radar-grid: #1A2235;
+  --color-atc-text: #E5E7EB;
+  --color-atc-green: #10B981;
+  --color-atc-dim: #6B7280;
+  
+  --color-critical: #EF4444; 
+  --color-high: #F97316; 
+  --color-medium: #EAB308; 
+  --color-low: #3B82F6; 
+  
+  --font-data: "JetBrains Mono", monospace;
+  --font-ui: "DM Sans", sans-serif;
+}
+
+:root {
+  background-color: var(--color-radar-bg);
+  color: var(--color-atc-text);
+  font-family: var(--font-ui);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Full screen ATC radar app */
+}
+
+/* Map specific overrides for Leaflet */
+.leaflet-container {
+  background-color: var(--color-radar-bg) !important;
+  font-family: var(--font-ui) !important;
+}
+
+/* Hide leaflet attribution to keep it clean, but keep it in HTML if needed legally */
+.leaflet-control-attribution {
+  display: none !important;
+}
+
+@keyframes sweep {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.radar-sweep {
+  position: relative;
+  overflow: hidden;
+}
+
+.radar-sweep::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150vw;
+  height: 150vw;
+  margin-top: -75vw;
+  margin-left: -75vw;
+  background: conic-gradient(from 0deg, transparent 0%, transparent 60%, rgba(16, 185, 129, 0.25) 100%);
+  border-radius: 50%;
+  animation: sweep 4s linear infinite;
+  pointer-events: none;
+  z-index: 100; /* Over the map, under panels */
+}

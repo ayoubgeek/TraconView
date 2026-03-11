@@ -1,0 +1,22 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Casablanca TMA",
+        "type": "TMA",
+        "lower": "2000ft",
+        "upper": "FL145"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-8.0, 33.0], [-7.0, 33.0], [-7.0, 34.0], [-8.0, 34.0], [-8.0, 33.0]
+          ]
+        ]
+      }
+    }
+  ]
+}
