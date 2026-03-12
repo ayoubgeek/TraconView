@@ -51,6 +51,10 @@ export default async function handler(req, res) {
       return res.status(504).json({ error: "OpenSky API timeout" });
     }
     console.error("API Proxy Error:", err);
-    return res.status(500).json({ error: "Internal Proxy Error" });
+    return res.status(500).json({ 
+      error: "Internal Proxy Error",
+      details: err.message,
+      stack: err.stack
+    });
   }
 }
