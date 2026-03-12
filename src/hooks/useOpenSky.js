@@ -30,29 +30,44 @@ export function useOpenSky() {
     try {
       const baseUrl = import.meta.env.VITE_SUPABASE_URL;
       
-      // Step 1: Get OAuth2 token from our Vercel API route (token proxy)
-      // Only fetch a new token if the cached one is expired
+      // Step 1: Get OAuth2 token directly from OpenSky (bypassing proxies due to IP blocks)
       const now = Date.now();
       if (!cachedToken || now >= tokenExpiresAt) {
-        const tokenUrl = `/api/opensky-token`;
-        const tokenResponse = await fetch(tokenUrl, {
-          method: 'GET',
+        // We use VITE_ prefixed env vars so they are available in the browser 
+        // Note: For a true production app, exposing the client_secret is a security risk.
+        // However, OpenSky's free tier heavily blocks Cloud Provider IPs (Vercel/Supabase),
+        // so doing the OAuth2 exchange from the user's browser (home IP) is the only reliable way.
+        const clientId = import.meta.env.VITE_OPENSKY_CLIENT_ID;
+        const clientSecret = import.meta.env.VITE_OPENSKY_CLIENT_SECRET;
+
+        // If credentials aren't provided yet, fail early securely
+        if (!clientId || !clientSecret) {
+            throw new Error("Missing VITE_OPENSKY_CLIENT_ID or VITE_OPENSKY_CLIENT_SECRET in Vercel.");
+        }
+
+        const tokenParams = new URLSearchParams();
+        tokenParams.append('grant_type', 'client_credentials');
+        tokenParams.append('client_id', clientId);
+        tokenParams.append('client_secret', clientSecret);
+
+        const tokenResponse = await fetch('https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: tokenParams.toString(),
           signal: abortControllerRef.current.signal
         });
 
         if (!tokenResponse.ok) {
-          throw new Error(`Token proxy error: ${tokenResponse.status}`);
+          throw new Error(`OpenSky Auth Error: ${tokenResponse.status}`);
         }
 
         const tokenData = await tokenResponse.json();
         
-        if (tokenData.error) {
-          throw new Error(tokenData.error);
-        }
-
-        cachedToken = tokenData.token;
-        // Cache token for the duration returned by the proxy (minus 30s safety margin)
-        tokenExpiresAt = now + (Math.max(0, (tokenData.tokenExpiresIn || 1800) - 30) * 1000);
+        cachedToken = tokenData.access_token;
+        // Cache token, expiring 60s early for safety
+        tokenExpiresAt = now + ((tokenData.expires_in - 60) * 1000);
       }
 
       // Step 2: Call OpenSky data API directly from the browser
