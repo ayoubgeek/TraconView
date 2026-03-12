@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --color-radar-bg: #0B101E;
+  --color-radar-bg: #050510;
   --color-radar-grid: #1A2235;
   --color-atc-text: #E5E7EB;
   --color-atc-green: #10B981;

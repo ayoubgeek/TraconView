@@ -2,12 +2,12 @@ import React, { useMemo } from 'react';
 import { CircleMarker, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
 import { useFlightStore } from '../../store/flightStore';
-import { checkAnomalies } from '../../lib/anomalyRules';
+
 import AnomalyMarker from './AnomalyMarker';
 
 // For US1 normal flights: teal, selected: cyan
 const COLORS = {
-  NORMAL: '#10B981', // atc-green
+  NORMAL: '#1e6a7a', // dim teal per spec
   SELECTED: '#22D3EE', // cyan-400
   CRITICAL: '#EF4444', 
   HIGH: '#F97316', 
@@ -29,7 +29,7 @@ export default function AircraftLayer() {
     <>
       {validAircraft.map(ac => {
         const isSelected = ac.id === selectedAircraftId;
-        const anomaly = checkAnomalies(ac);
+        const anomaly = ac.anomaly ? { type: ac.anomaly, severity: ac.anomalySeverity } : null;
         
         // Base color or severity color if anomalous (and not selected)
         let color = isSelected ? COLORS.SELECTED : COLORS.NORMAL;
@@ -46,7 +46,7 @@ export default function AircraftLayer() {
             
             <CircleMarker
               center={[ac.lat, ac.lng]}
-              radius={isSelected ? 6 : 4}
+              radius={isSelected ? 6 : 3}
               pathOptions={{
                 color: color,
                 fillColor: color,

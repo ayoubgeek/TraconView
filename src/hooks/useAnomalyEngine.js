@@ -34,6 +34,8 @@ export function useAnomalyEngine() {
   const addAnomaly = useFlightStore(state => state.addAnomaly);
   const isMuted = useFlightStore(state => state.isMuted);
   const lastRefresh = useFlightStore(state => state.lastRefresh);
+  const selectedRegion = useFlightStore(state => state.selectedRegion);
+  const setAircraftData = useFlightStore(state => state.setAircraftData);
   
   const processedTimestamps = useRef(new Set());
 
@@ -69,6 +71,7 @@ export function useAnomalyEngine() {
           squawk: aircraft.squawk,
           lat: aircraft.lat,
           lng: aircraft.lng,
+          region: selectedRegion.key,
           detectedAt: new Date().toISOString()
         };
         
@@ -79,15 +82,18 @@ export function useAnomalyEngine() {
           supabase.from('anomaly_log').insert([{
             icao24: anomalyRecord.icao24,
             callsign: anomalyRecord.callsign,
-            type: anomalyRecord.type,
+            anomaly_type: anomalyRecord.type,
             severity: anomalyRecord.severity,
-            altitude: anomalyRecord.altitude,
-            speed: anomalyRecord.speed,
-            vertical_rate: anomalyRecord.verticalRate,
+            altitude_ft: Math.round(anomalyRecord.altitude),
+            speed_kts: Math.round(anomalyRecord.speed),
+            vertical_rate_fpm: Math.round(anomalyRecord.verticalRate),
             squawk: anomalyRecord.squawk,
-            lat: anomalyRecord.lat,
-            lng: anomalyRecord.lng
-          }]).catch(err => console.error("Supabase Log Error:", err));
+            latitude: anomalyRecord.lat,
+            longitude: anomalyRecord.lng,
+            region: anomalyRecord.region
+          }]).then(({ error }) => {
+            if (error) console.error("Supabase anomaly_log insert error:", error.message);
+          });
         }
 
         // Play sound if critical, not muted, and we haven't played one this tick yet to avoid ear rape
@@ -98,5 +104,17 @@ export function useAnomalyEngine() {
       }
     });
 
-  }, [aircraftArray, lastRefresh, addAnomaly, isMuted]);
+    // Enrich aircraft with anomaly data for rendering
+    const enriched = aircraftArray.map(ac => {
+      const result = checkAnomalies(ac);
+      return result 
+        ? { ...ac, anomaly: result.type, anomalySeverity: result.severity }
+        : { ...ac, anomaly: null, anomalySeverity: null };
+    });
+    // Only update if something changed
+    if (enriched.some((ac, i) => ac.anomaly !== aircraftArray[i]?.anomaly)) {
+      setAircraftData(enriched, lastRefresh);
+    }
+
+  }, [aircraftArray, lastRefresh, addAnomaly, isMuted, selectedRegion, setAircraftData]);
 }

@@ -1,5 +1,9 @@
 # TraconView 📡 Live Flight Anomaly Radar
 
+![TraconView Screenshot](docs/screenshot.png)
+
+**[▸ Live Demo](https://traconview.vercel.app)** | [License](LICENSE)
+
 TraconView is a high-performance React/Vite application that proxies OpenSky Network data through Supabase Edge Functions to render live air traffic in a professional Air Traffic Control (ATC) dark theme. It features a real-time anomaly detection engine designed to identify unusual patterns like rapid descents, 7700 squawks, and unusual altitudes.
 
 ## Features
