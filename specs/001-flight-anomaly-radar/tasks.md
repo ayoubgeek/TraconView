@@ -329,3 +329,17 @@ Phase 9 (US7: System Health)        # Independent — only needs status indicato
 - [x] T064 [US9] Replace `CircleMarker` with `Marker` and a customized `L.divIcon` (SVG airplane) that rotates dynamically based on `heading` in `src/components/map/AircraftLayer.jsx`
 - [x] T065 [US9] Implement fetch logic to `api.planespotters.net/pub/photos/hex/{hex}` to retrieve aircraft images when an aircraft is selected in `src/components/panels/AircraftDetail.jsx`
 - [x] T066 [US9] Restructure `AircraftDetail.jsx` layout to exactly match the target UI screenshot (Image pane, Metadata, Spatial, Signal, etc.) using available OpenSky datastream parameters.
+
+---
+
+## Phase 13: User Story 10 — Flight Trails & UI Polish (Priority: P2)
+
+**Goal**: Show a trailing history path behind the selected aircraft, colored by altitude or a solid color, and resolve click-handling bugs in the UI.
+
+**Independent Test**: Click an aircraft → sidebar opens, map draws a polyline showing past path. Click close (`X`) in sidebar → sidebar closes and selected plane resets.
+
+### Implementation for User Story 10
+
+- [x] T067 [US10] Fix `z-index` and pointer-events overlaps in `AircraftDetail.jsx` preventing the close button from working.
+- [x] T068 [US10] Implement `/api/tracks/all?icao24={hex}` fetch logic to retrieve historical path coordinates automatically when an aircraft is selected.
+- [x] T069 [US10] Render `Polyline` inside `AircraftLayer` dynamically displaying the fetched track for the currently selected aircraft.
