@@ -65,24 +65,27 @@ export default function AircraftDetail() {
     <div className="absolute right-4 top-20 w-72 bg-[#1c222b]/95 backdrop-blur-md border border-gray-700 shadow-2xl z-[1000] text-gray-200 font-ui overflow-hidden flex flex-col h-[calc(100vh-100px)]">
       
       {/* Header */}
-      <div className="p-2 border-b border-gray-700 flex flex-col gap-1 relative">
+      <div className="p-3 border-b border-gray-700 flex justify-between items-start bg-[#161F2E]">
+        <div className="flex flex-col gap-1">
+          <div className="text-xl font-bold text-gray-100 uppercase tracking-wide">
+            {ac.callsign || 'UNKNOWN'}
+          </div>
+          <div className="flex items-center gap-2 text-xs font-data">
+            <span className="font-bold text-gray-300">Hex: {ac.id.toUpperCase()}</span>
+            <button className="text-blue-400 hover:text-blue-300 underline text-[10px] ml-2 font-ui flex items-center gap-1">
+              <Copy className="w-3 h-3" /> Copy Link
+            </button>
+          </div>
+        </div>
         <button 
-          onClick={clearSelectedAircraft}
-          className="absolute top-2 right-2 text-gray-400 hover:text-white transition-colors"
+          onClick={(e) => {
+            e.stopPropagation();
+            clearSelectedAircraft();
+          }}
+          className="p-1.5 rounded-md hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
         >
-          <X className="w-4 h-4" />
+          <X className="w-5 h-5" />
         </button>
-        
-        <div className="text-lg text-gray-100 uppercase translate-y-[-2px] tracking-wide">
-          {ac.callsign || 'UNKNOWN'}
-        </div>
-        
-        <div className="flex items-center gap-2 text-xs font-data">
-          <span className="font-bold text-gray-300">Hex: {ac.id.toUpperCase()}</span>
-          <button className="text-blue-400 hover:text-blue-300 flex items-center gap-1 underline text-[10px] ml-2">
-            Copy Link
-          </button>
-        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto pb-4 custom-scrollbar">

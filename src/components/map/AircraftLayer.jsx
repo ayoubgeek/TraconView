@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { Marker, Tooltip } from 'react-leaflet';
+import React, { useMemo, useState, useEffect } from 'react';
+import { Marker, Tooltip, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import { useFlightStore } from '../../store/flightStore';
 
@@ -35,6 +35,84 @@ const createPlaneIcon = (color, heading, isSelected) => {
   });
 };
 
+function SelectedAircraftTrack({ icao24 }) {
+  const [trackChunks, setTrackChunks] = useState([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    setTrackChunks([]); // reset on new aircraft
+
+    if (!icao24) return;
+
+    const fetchTrack = async () => {
+      try {
+        const res = await fetch(`https://opensky-network.org/api/tracks/all?icao24=${icao24}&time=0`);
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && data.path && data.path.length > 0) {
+            
+            // Generate altitude-colored segments
+            const getAltColor = (m) => {
+              const ft = m * 3.28084;
+              if (ft > 30000) return '#C084FC'; // purple
+              if (ft > 20000) return '#10B981'; // green
+              if (ft > 10000) return '#F59E0B'; // yellow
+              return '#EF4444'; // red
+            };
+
+            const chunks = [];
+            let currentChunk = [];
+            let currentColor = null;
+
+            data.path.forEach(pt => {
+              // pt[1]=lat, pt[2]=lng, pt[3]=baro_alt
+              const c = getAltColor(pt[3] || 0);
+              const ll = [pt[1], pt[2]];
+              
+              if (c !== currentColor) {
+                if (currentChunk.length > 0) {
+                  // End previous chunk, start new one overlapping to connect
+                  currentChunk.push(ll);
+                  chunks.push({ color: currentColor, positions: currentChunk });
+                }
+                currentChunk = [ll];
+                currentColor = c;
+              } else {
+                currentChunk.push(ll);
+              }
+            });
+            if (currentChunk.length > 0) {
+              chunks.push({ color: currentColor, positions: currentChunk });
+            }
+            
+            setTrackChunks(chunks);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch aircraft track:", err);
+      }
+    };
+    fetchTrack();
+    return () => { isMounted = false; };
+  }, [icao24]);
+
+  if (trackChunks.length === 0) return null;
+
+  return (
+    <>
+      {trackChunks.map((chunk, i) => (
+        <Polyline 
+          key={i}
+          positions={chunk.positions}
+          color={chunk.color}
+          weight={4}
+          opacity={0.8}
+        />
+      ))}
+    </>
+  );
+}
+
 export default function AircraftLayer() {
   const aircraftArray = useFlightStore(state => state.aircraftArray);
   const selectedAircraftId = useFlightStore(state => state.selectedAircraftId);
@@ -47,6 +125,9 @@ export default function AircraftLayer() {
 
   return (
     <>
+      {/* Draw the track for the selected aircraft ONLY */}
+      <SelectedAircraftTrack icao24={selectedAircraftId} />
+      
       {validAircraft.map(ac => {
         const isSelected = ac.id === selectedAircraftId;
         const anomaly = ac.anomaly ? { type: ac.anomaly, severity: ac.anomalySeverity } : null;
@@ -69,7 +150,7 @@ export default function AircraftLayer() {
               icon={createPlaneIcon(color, ac.heading, isSelected)}
               eventHandlers={{
                 click: (e) => {
-                  L.DomEvent.stopPropagation(e);
+                  L.DomEvent.stopPropagation(e); // Block map click from firing and immediately clearing
                   setSelectedAircraft(ac.id);
                 }
               }}
