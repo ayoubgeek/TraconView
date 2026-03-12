@@ -2,6 +2,7 @@
 import React from 'react';
 import { GeoJSON } from 'react-leaflet';
 import { useAirspaceData } from '../../hooks/useAirspaceData';
+import { useFlightStore } from '../../store/flightStore';
 
 // CTR=cyan, TMA=amber, Restricted=red, FIR=white
 const getColorForAirspace = (type) => {
@@ -43,7 +44,9 @@ const onEachFeature = (feature, layer) => {
 export default function AirspaceLayer() {
   const { geojsonData } = useAirspaceData();
 
-  if (!geojsonData) return null;
+  const showAirspace = useFlightStore(state => state.showAirspace);
+
+  if (!geojsonData || !showAirspace) return null;
 
   return (
     <GeoJSON 

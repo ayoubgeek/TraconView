@@ -3,13 +3,15 @@ import React from 'react';
 import { useFlightStore } from '../../store/flightStore';
 import StatusIndicator from './StatusIndicator';
 import RegionSelector from '../panels/RegionSelector';
-import { Volume2, VolumeX, Radar, Bell } from 'lucide-react';
+import { Volume2, VolumeX, Radar, Bell, Layers } from 'lucide-react';
 
 export default function Header() {
   const aircraftArray = useFlightStore(state => state.aircraftArray);
   const isMuted = useFlightStore(state => state.isMuted);
   const toggleMute = useFlightStore(state => state.toggleMute);
   const toggleSidebar = useFlightStore(state => state.toggleSidebar);
+  const showAirspace = useFlightStore(state => state.showAirspace);
+  const toggleAirspace = useFlightStore(state => state.toggleAirspace);
 
   return (
     <header className="absolute top-4 left-4 right-4 z-[1000] flex justify-between items-start pointer-events-none">

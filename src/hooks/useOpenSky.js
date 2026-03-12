@@ -52,11 +52,10 @@ export function useOpenSky() {
       // The edge function proxy payload shape is: { time, aircraft: [...raw_arrays], meta: {...} }
       // Because we passed the raw states arrays to save backend compute:
       const now = Date.now();
-      const transformed = (rawData.aircraft || []).map(transformOpenSkyAircraft);
-      
       // Cleanup stale aircraft: filter locally just to be sure we only store fresh ones.
       // We rely on the `lastSeen` timestamp from API.
       const timeInSecs = rawData.time || Math.floor(now / 1000);
+      const transformed = rawData.aircraft || [];
       const staleThreshold = timeInSecs - (STALE_AIRCRAFT_MS / 1000);
       
       const freshAircraft = transformed.filter(ac => ac.lastSeen >= staleThreshold);
@@ -108,14 +107,18 @@ export function useOpenSky() {
     };
   }, [fetchFlightData]);
 
+  const aircraftArrayRef = useRef([]);
+  aircraftArrayRef.current = aircraftArray;
+
   // Clean up stale aircraft from the store in case the API doesn't drop them completely
   useEffect(() => {
     const cleanerInterval = setInterval(() => {
+      const current = aircraftArrayRef.current;
       const now = Date.now() / 1000;
       const staleThreshold = now - (STALE_AIRCRAFT_MS / 1000);
       let removedAny = false;
       
-      const freshAircraft = aircraftArray.filter(ac => {
+      const freshAircraft = current.filter(ac => {
         if (ac.lastSeen < staleThreshold) {
           removedAny = true;
           return false;
@@ -129,5 +132,5 @@ export function useOpenSky() {
     }, 10000);
     
     return () => clearInterval(cleanerInterval);
-  }, [aircraftArray, setAircraftData]);
+  }, [setAircraftData]);
 }

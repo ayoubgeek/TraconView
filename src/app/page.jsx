@@ -8,11 +8,16 @@ import StatsPanel from '../components/panels/StatsPanel';
 import { useOpenSky } from '../hooks/useOpenSky';
 import { useAnomalyEngine } from '../hooks/useAnomalyEngine';
 
+import { useFlightStore } from '../store/flightStore';
+
 export default function Page() {
   // Initialize OpenSky data fetching loop
   useOpenSky();
   // Initialize anomaly detection engine
   useAnomalyEngine();
+
+  const aircraftCount = useFlightStore(state => state.aircraftArray.length);
+  const connectionStatus = useFlightStore(state => state.connectionStatus);
 
   return (
     <div className="w-full h-[calc(100vh-25px)] relative pb-6">
@@ -27,6 +32,13 @@ export default function Page() {
           <TraconMap />
           <AircraftDetail />
           <StatsPanel />
+          {aircraftCount === 0 && connectionStatus === 'LIVE' && (
+            <div className="absolute inset-0 flex items-center justify-center z-[200] pointer-events-none">
+              <span className="text-atc-dim text-sm font-ui bg-radar-bg/80 px-4 py-2 rounded border border-radar-grid">
+                No aircraft in range
+              </span>
+            </div>
+          )}
         </div>
         <AlertSidebar />
       </div>

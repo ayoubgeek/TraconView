@@ -21,7 +21,7 @@ export default function RegionSelector() {
                 : 'text-atc-dim hover:text-white hover:bg-[#121a2f] border border-transparent'
             }`}
           >
-            {region.key.replace('_', ' ')}
+            {region.label}
           </button>
         );
       })}
