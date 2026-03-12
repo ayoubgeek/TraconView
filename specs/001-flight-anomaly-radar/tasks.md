@@ -315,3 +315,17 @@ Phase 9 (US7: System Health)        # Independent — only needs status indicato
 - Updated `public/data/airspaces-eu.geojson` and `airspaces-mena.geojson` with real complex geometries representing FIRs, TMAs, CTRs, and Restricted areas.
 
 **Status**: All deployment setup and codebase refinements are complete. App is fully live in production.
+
+---
+
+## Phase 12: User Story 9 — Realistic Aircraft Icons & Photos (Priority: P2)
+
+**Goal**: Make the map visually richer by using directional airplane icons, and provide a detailed aircraft card featuring a real photograph of the plane.
+
+**Independent Test**: Load map → see airplane silhouettes pointing in direction of travel. Click plane → sidebar opens showing photo from `planespotters.net`, formatted data grid mimicking professional flight trackers.
+
+### Implementation for User Story 9
+
+- [x] T064 [US9] Replace `CircleMarker` with `Marker` and a customized `L.divIcon` (SVG airplane) that rotates dynamically based on `heading` in `src/components/map/AircraftLayer.jsx`
+- [x] T065 [US9] Implement fetch logic to `api.planespotters.net/pub/photos/hex/{hex}` to retrieve aircraft images when an aircraft is selected in `src/components/panels/AircraftDetail.jsx`
+- [x] T066 [US9] Restructure `AircraftDetail.jsx` layout to exactly match the target UI screenshot (Image pane, Metadata, Spatial, Signal, etc.) using available OpenSky datastream parameters.
