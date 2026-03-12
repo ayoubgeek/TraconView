@@ -1,9 +1,11 @@
 // src/hooks/useOpenSky.js
+// Calls OpenSky API directly from the browser.
+// OpenSky sends "Access-Control-Allow-Origin: *" — no proxy needed.
 import { useEffect, useRef, useCallback } from 'react';
 import { useFlightStore } from '../store/flightStore';
 import { POLL_INTERVAL_MS, DEGRADED_POLL_INTERVAL_MS, STALE_AIRCRAFT_MS } from '../lib/constants';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const OPENSKY_API = 'https://opensky-network.org/api/states/all';
 
 export function useOpenSky() {
   const {
@@ -32,55 +34,23 @@ export function useOpenSky() {
         ? `?lamin=${bounds.south}&lamax=${bounds.north}&lomin=${bounds.west}&lomax=${bounds.east}`
         : '';
 
-      // Strategy: try Vercel proxy first (unauthenticated, strips CORS headers),
-      // fall back to Supabase Edge Function if available
-      let rawData = null;
-      let fetchError = null;
+      // Call OpenSky directly — they send Access-Control-Allow-Origin: *
+      const response = await fetch(`${OPENSKY_API}${qs}`, {
+        signal: abortControllerRef.current.signal,
+      });
 
-      // Attempt 1: Vercel serverless proxy (no auth needed)
-      try {
-        const response = await fetch(`/api/opensky-proxy${qs}`, {
-          signal: abortControllerRef.current.signal,
-        });
-
-        if (response.status === 429) {
-          setConnectionStatus('DEGRADED');
-          consecutiveErrors.current = 0;
-          scheduleNext(DEGRADED_POLL_INTERVAL_MS);
-          return;
-        }
-
-        if (response.ok) {
-          rawData = await response.json();
-        } else {
-          fetchError = new Error(`Vercel proxy: ${response.status}`);
-        }
-      } catch (err) {
-        if (err.name === 'AbortError') throw err;
-        fetchError = err;
+      if (response.status === 429) {
+        setConnectionStatus('DEGRADED');
+        consecutiveErrors.current = 0;
+        scheduleNext(DEGRADED_POLL_INTERVAL_MS);
+        return;
       }
 
-      // Attempt 2: Supabase Edge Function (if Vercel proxy failed)
-      if (!rawData && SUPABASE_URL) {
-        try {
-          const supaResponse = await fetch(
-            `${SUPABASE_URL}/functions/v1/opensky-proxy?region=${regionKey}`,
-            { signal: abortControllerRef.current.signal }
-          );
-
-          if (supaResponse.ok) {
-            rawData = await supaResponse.json();
-            fetchError = null;
-          }
-        } catch (err) {
-          if (err.name === 'AbortError') throw err;
-          // Both failed, keep the original error
-        }
+      if (!response.ok) {
+        throw new Error(`OpenSky API: ${response.status}`);
       }
 
-      if (!rawData) {
-        throw fetchError || new Error('All data sources failed');
-      }
+      const rawData = await response.json();
 
       // Transform raw OpenSky state arrays into aircraft objects
       const timeInSecs = rawData.time || Math.floor(Date.now() / 1000);
