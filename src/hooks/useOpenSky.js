@@ -50,7 +50,7 @@ export function useOpenSky() {
         tokenParams.append('client_id', clientId);
         tokenParams.append('client_secret', clientSecret);
 
-        const tokenResponse = await fetch('https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token', {
+        const tokenResponse = await fetch('/opensky-auth', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
@@ -72,7 +72,7 @@ export function useOpenSky() {
 
       // Step 2: Call OpenSky data API directly from the browser
       const bounds = selectedRegion.bounds;
-      let openSkyUrl = 'https://opensky-network.org/api/states/all';
+      let openSkyUrl = '/opensky-api/states/all';
       if (selectedRegion.key !== 'GLOBAL') {
         openSkyUrl += `?lamin=${bounds.south}&lamax=${bounds.north}&lomin=${bounds.west}&lomax=${bounds.east}`;
       }
