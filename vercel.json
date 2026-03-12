@@ -1,15 +1,5 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "framework": "vite",
-  "rewrites": [
-    {
-      "source": "/opensky-auth",
-      "destination": "https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token"
-    },
-    {
-      "source": "/opensky-api/:match*",
-      "destination": "https://opensky-network.org/api/:match*"
-    }
-  ]
+  "framework": "vite"
 }

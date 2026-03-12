@@ -30,32 +30,11 @@ export function useOpenSky() {
     try {
       const baseUrl = import.meta.env.VITE_SUPABASE_URL;
       
-      // Step 1: Get OAuth2 token directly from OpenSky (bypassing proxies due to IP blocks)
+      // Step 1: Get OAuth2 token from our secure serverless backend
       const now = Date.now();
       if (!cachedToken || now >= tokenExpiresAt) {
-        // We use VITE_ prefixed env vars so they are available in the browser 
-        // Note: For a true production app, exposing the client_secret is a security risk.
-        // However, OpenSky's free tier heavily blocks Cloud Provider IPs (Vercel/Supabase),
-        // so doing the OAuth2 exchange from the user's browser (home IP) is the only reliable way.
-        const clientId = import.meta.env.VITE_OPENSKY_CLIENT_ID;
-        const clientSecret = import.meta.env.VITE_OPENSKY_CLIENT_SECRET;
-
-        // If credentials aren't provided yet, fail early securely
-        if (!clientId || !clientSecret) {
-            throw new Error("Missing VITE_OPENSKY_CLIENT_ID or VITE_OPENSKY_CLIENT_SECRET in Vercel.");
-        }
-
-        const tokenParams = new URLSearchParams();
-        tokenParams.append('grant_type', 'client_credentials');
-        tokenParams.append('client_id', clientId);
-        tokenParams.append('client_secret', clientSecret);
-
-        const tokenResponse = await fetch('/opensky-auth', {
+        const tokenResponse = await fetch('/api/opensky-auth', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          },
-          body: tokenParams.toString(),
           signal: abortControllerRef.current.signal
         });
 
@@ -70,9 +49,9 @@ export function useOpenSky() {
         tokenExpiresAt = now + ((tokenData.expires_in - 60) * 1000);
       }
 
-      // Step 2: Call OpenSky data API directly from the browser
+      // Step 2: Call OpenSky data API via our serverless proxy
       const bounds = selectedRegion.bounds;
-      let openSkyUrl = '/opensky-api/states/all';
+      let openSkyUrl = '/api/opensky-proxy/states/all';
       if (selectedRegion.key !== 'GLOBAL') {
         openSkyUrl += `?lamin=${bounds.south}&lamax=${bounds.north}&lomin=${bounds.west}&lomax=${bounds.east}`;
       }
