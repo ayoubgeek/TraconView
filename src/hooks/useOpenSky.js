@@ -1,8 +1,11 @@
 // src/hooks/useOpenSky.js
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useFlightStore } from '../store/flightStore';
-import { transformOpenSkyAircraft } from '../lib/transformers';
 import { POLL_INTERVAL_MS, DEGRADED_POLL_INTERVAL_MS, STALE_AIRCRAFT_MS } from '../lib/constants';
+
+// Token cache (module-level so it persists across re-renders)
+let cachedToken = null;
+let tokenExpiresAt = 0;
 
 export function useOpenSky() {
   const { 
@@ -26,21 +29,62 @@ export function useOpenSky() {
 
     try {
       const baseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const functionUrl = `${baseUrl}/functions/v1/opensky-proxy?region=${selectedRegion.key}`;
       
-      const response = await fetch(functionUrl, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-        },
+      // Step 1: Get OAuth2 token from our Vercel API route (token proxy)
+      // Only fetch a new token if the cached one is expired
+      const now = Date.now();
+      if (!cachedToken || now >= tokenExpiresAt) {
+        const tokenUrl = `/api/opensky-token`;
+        const tokenResponse = await fetch(tokenUrl, {
+          method: 'GET',
+          signal: abortControllerRef.current.signal
+        });
+
+        if (!tokenResponse.ok) {
+          throw new Error(`Token proxy error: ${tokenResponse.status}`);
+        }
+
+        const tokenData = await tokenResponse.json();
+        
+        if (tokenData.error) {
+          throw new Error(tokenData.error);
+        }
+
+        cachedToken = tokenData.token;
+        // Cache token for the duration returned by the proxy (minus 30s safety margin)
+        tokenExpiresAt = now + (Math.max(0, (tokenData.tokenExpiresIn || 1800) - 30) * 1000);
+      }
+
+      // Step 2: Call OpenSky data API directly from the browser
+      const bounds = selectedRegion.bounds;
+      let openSkyUrl = 'https://opensky-network.org/api/states/all';
+      if (selectedRegion.key !== 'GLOBAL') {
+        openSkyUrl += `?lamin=${bounds.south}&lamax=${bounds.north}&lomin=${bounds.west}&lomax=${bounds.east}`;
+      }
+
+      const fetchHeaders = {};
+      if (cachedToken) {
+        fetchHeaders['Authorization'] = `Bearer ${cachedToken}`;
+      }
+
+      const response = await fetch(openSkyUrl, {
+        headers: fetchHeaders,
         signal: abortControllerRef.current.signal
       });
 
       if (response.status === 429) {
         setConnectionStatus('DEGRADED');
         consecutiveErrors.current = 0;
+        cachedToken = null; // Reset token in case it's the cause
         scheduleNext(DEGRADED_POLL_INTERVAL_MS);
         return;
+      }
+
+      if (response.status === 401 || response.status === 403) {
+        // Token expired or invalid, clear it and retry
+        cachedToken = null;
+        tokenExpiresAt = 0;
+        throw new Error(`Auth error: ${response.status}`);
       }
 
       if (!response.ok) {
@@ -49,28 +93,43 @@ export function useOpenSky() {
 
       const rawData = await response.json();
       
-      // The edge function proxy payload shape is: { time, aircraft: [...raw_arrays], meta: {...} }
-      // Because we passed the raw states arrays to save backend compute:
-      const now = Date.now();
-      // Cleanup stale aircraft: filter locally just to be sure we only store fresh ones.
-      // We rely on the `lastSeen` timestamp from API.
-      const timeInSecs = rawData.time || Math.floor(now / 1000);
-      const transformed = rawData.aircraft || [];
+      // Transform raw OpenSky state arrays into aircraft objects
+      const timeInSecs = rawData.time || Math.floor(Date.now() / 1000);
+      const states = rawData.states || [];
+      
+      const aircraft = states.map((raw) => {
+        const id = raw[0];
+        let callsign = raw[1] ? String(raw[1]).trim() : '';
+        if (!callsign) callsign = id;
+        
+        return {
+          id,
+          callsign,
+          country: raw[2],
+          lastSeen: raw[4],
+          lng: raw[5] !== null ? raw[5] : null,
+          lat: raw[6] !== null ? raw[6] : null,
+          altitude: raw[7] !== null ? raw[7] * 3.28084 : 0,
+          onGround: !!raw[8],
+          speed: raw[9] !== null ? raw[9] * 1.94384 : 0,
+          heading: raw[10] !== null ? raw[10] : 0,
+          verticalRate: raw[11] !== null ? raw[11] * 196.85 : 0,
+          squawk: raw[14] !== null ? String(raw[14]) : null,
+          spi: !!raw[15],
+          source: ['ADSB','ASTERIX','MLAT','FLARM'][raw[16]] || 'UNKNOWN'
+        };
+      });
+
+      // Filter stale aircraft
       const staleThreshold = timeInSecs - (STALE_AIRCRAFT_MS / 1000);
+      const freshAircraft = aircraft.filter(ac => ac.lastSeen >= staleThreshold);
       
-      const freshAircraft = transformed.filter(ac => ac.lastSeen >= staleThreshold);
+      setAircraftData(freshAircraft, Date.now());
       
-      setAircraftData(freshAircraft, now);
-      
-      // Handle connection status logic
+      // Handle connection status
       consecutiveErrors.current = 0;
-      if (rawData.meta && rawData.meta.creditWarning) {
-        setConnectionStatus('DEGRADED');
-        scheduleNext(DEGRADED_POLL_INTERVAL_MS);
-      } else {
-        setConnectionStatus('LIVE');
-        scheduleNext(POLL_INTERVAL_MS);
-      }
+      setConnectionStatus('LIVE');
+      scheduleNext(POLL_INTERVAL_MS);
       
     } catch (err) {
       if (err.name === 'AbortError') return;
@@ -80,9 +139,6 @@ export function useOpenSky() {
       
       if (consecutiveErrors.current >= 3) {
         setConnectionStatus('OFFLINE');
-        // Stop polling completely after 3 consecutive failures.
-        // Or we could backoff. The spec says "stop polling until the user manually retries or the system recovers."
-        // We will pause and wait, maybe check every 60s
         scheduleNext(60000);
       } else {
         scheduleNext(POLL_INTERVAL_MS);
@@ -110,7 +166,7 @@ export function useOpenSky() {
   const aircraftArrayRef = useRef([]);
   aircraftArrayRef.current = aircraftArray;
 
-  // Clean up stale aircraft from the store in case the API doesn't drop them completely
+  // Clean up stale aircraft periodically
   useEffect(() => {
     const cleanerInterval = setInterval(() => {
       const current = aircraftArrayRef.current;
