@@ -308,10 +308,10 @@ Phase 9 (US7: System Health)        # Independent — only needs status indicato
 - Implemented User Stories 1 through 8 covering: Live map monitoring, anomaly alerts with audio, collapsible Alert Sidebar, region selection, airspace GeoJSON overlays, statistics dashboard, and mobile responsiveness.
 - Added visual polish, including a CSS radar sweep animation, ATC-dark theme, and Vercel configuration.
 - Successfully verified the production build.
+- Connected the GitHub repository to Vercel for continuous deployment.
+- Provided real `OPENSKY_CLIENT_ID` and `OPENSKY_CLIENT_SECRET` to the production Supabase vault.
+- Ran the Supabase SQL migration against the production Supabase database to stand up the `anomaly_log` table.
+- Applied code review fixes to optimize `React-Leaflet` rendering loops.
+- Updated `public/data/airspaces-eu.geojson` and `airspaces-mena.geojson` with real complex geometries representing FIRs, TMAs, CTRs, and Restricted areas.
 
-**What we should do next**:
-- Check component re-rendering behavior and optimize `React-Leaflet` rendering loops if map performance drops under heavy load.
-- Connect the GitHub repository to Vercel for continuous deployment.
-- Provide real `OPENSKY_CLIENT_ID` and `OPENSKY_CLIENT_SECRET` to the production Supabase vault.
-- Update `public/data/airspaces-eu.geojson` and `airspaces-mena.geojson` with real complex geometries instead of the current testing mock data.
-- Run the Supabase SQL migration against the production Supabase database to stand up the `anomaly_log` table.
+**Status**: All deployment setup and codebase refinements are complete. App is fully live in production.
