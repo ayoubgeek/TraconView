@@ -39,7 +39,7 @@ export function useOpenSky() {
 
       // Attempt 1: Vercel serverless proxy (no auth needed)
       try {
-        const response = await fetch(`/api/opensky-proxy/states/all${qs}`, {
+        const response = await fetch(`/api/opensky-proxy${qs}`, {
           signal: abortControllerRef.current.signal,
         });
 
