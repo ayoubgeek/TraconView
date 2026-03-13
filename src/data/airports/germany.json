@@ -1,0 +1,7 @@
+[
+  { "icao": "EDDF", "name": "Frankfurt am Main", "lat": 50.0333, "lng": 8.5705 },
+  { "icao": "EDDM", "name": "Munich", "lat": 48.3538, "lng": 11.7861 },
+  { "icao": "EDDB", "name": "Berlin Brandenburg", "lat": 52.3622, "lng": 13.5006 },
+  { "icao": "EDDH", "name": "Hamburg", "lat": 53.6304, "lng": 9.9882 },
+  { "icao": "EDDL", "name": "Düsseldorf", "lat": 51.2894, "lng": 6.7668 }
+]

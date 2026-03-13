@@ -3,15 +3,16 @@ import React from 'react';
 import { useFlightStore } from '../../store/flightStore';
 import StatusIndicator from './StatusIndicator';
 import RegionSelector from '../panels/RegionSelector';
-import { Volume2, VolumeX, Radar, Bell, Layers } from 'lucide-react';
+import AirspaceToggle from './AirspaceToggle';
+import ExportButton from './ExportButton';
+import { Volume2, VolumeX, Radar, Bell, Camera } from 'lucide-react';
 
 export default function Header() {
   const aircraftArray = useFlightStore(state => state.aircraftArray);
   const isMuted = useFlightStore(state => state.isMuted);
   const toggleMute = useFlightStore(state => state.toggleMute);
   const toggleSidebar = useFlightStore(state => state.toggleSidebar);
-  const showAirspace = useFlightStore(state => state.showAirspace);
-  const toggleAirspace = useFlightStore(state => state.toggleAirspace);
+  const toggleScreenshotMode = useFlightStore(state => state.toggleScreenshotMode);
 
   return (
     <header className="absolute top-4 left-4 right-4 z-[1000] flex justify-between items-start pointer-events-none">
@@ -40,9 +41,21 @@ export default function Header() {
           <span className="text-lg font-data font-bold text-atc-text">{aircraftArray.length}</span>
         </div>
 
+        <ExportButton />
+
+        <button 
+          onClick={toggleScreenshotMode}
+          className="bg-radar-bg/80 backdrop-blur-md border border-radar-grid rounded-lg w-[42px] h-[42px] flex items-center justify-center shadow hover:bg-radar-grid transition-colors text-atc-dim hover:text-white"
+          title="Screenshot Mode"
+        >
+          <Camera className="w-5 h-5 flex-shrink-0" />
+        </button>
+
+        <AirspaceToggle />
+
         <button 
           onClick={toggleMute}
-          className="bg-radar-bg/80 backdrop-blur-md border border-radar-grid rounded w-12 flex items-center justify-center shadow hover:bg-radar-grid transition-colors text-atc-dim hover:text-white"
+          className="bg-radar-bg/80 backdrop-blur-md border border-radar-grid rounded-lg w-[42px] h-[42px] flex items-center justify-center shadow hover:bg-radar-grid transition-colors text-atc-dim hover:text-white"
           title={isMuted ? "Unmute alerts" : "Mute alerts"}
         >
           {isMuted ? <VolumeX className="w-5 h-5 text-red-400" /> : <Volume2 className="w-5 h-5" />}
