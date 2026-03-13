@@ -1,5 +1,4 @@
 // src/components/panels/AlertSidebar.jsx
-import React from 'react';
 import { useFlightStore } from '../../store/flightStore';
 import { ANOMALY_SEVERITY } from '../../lib/constants';
 
@@ -34,7 +33,7 @@ export default function AlertSidebar() {
         <div className="p-4 border-b border-radar-grid shrink-0 bg-[#0c1322]">
           <h2 className="text-white font-ui tracking-widest text-sm uppercase font-bold flex items-center justify-between">
             Alert Feed
-            <span className="bg-radar-grid text-atc-dim px-2 py-0.5 rounded text-[10px]">{anomalies.length}</span>
+            <span className="bg-radar-grid text-atc-dim px-2 py-0.5 rounded text-[10px]">{alerts.length}</span>
           </h2>
         </div>
 
