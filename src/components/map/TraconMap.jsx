@@ -9,6 +9,7 @@ import { useAirspaceDetection } from '../../hooks/useAirspaceDetection';
 import { usePositionHistory } from '../../hooks/usePositionHistory';
 import { useHoldingDetection } from '../../hooks/useHoldingDetection';
 import HoldingTrails from './HoldingTrails';
+import WeatherLayer from './WeatherLayer';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
