@@ -35,5 +35,6 @@ RULES.md
 .cursor/
 .windsurf/
 *.prompt.md
+PROMPT-*.md
 *_AGENT_*.md
 CLAUDE.md
