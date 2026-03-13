@@ -1,8 +1,6 @@
-// src/hooks/useAnomalyEngine.js
 import { useEffect, useRef } from 'react';
 import { useFlightStore } from '../store/flightStore';
-import { checkAnomalies } from '../lib/anomalyRules';
-import { ANOMALY_SEVERITY } from '../lib/constants';
+import { computeRiskScore } from '../lib/riskScoring';
 import { supabase } from '../lib/supabase';
 
 // Web Audio API beep for critical alerts
@@ -31,11 +29,12 @@ const playCriticalBeep = () => {
 
 export function useAnomalyEngine() {
   const aircraftArray = useFlightStore(state => state.aircraftArray);
-  const addAnomaly = useFlightStore(state => state.addAnomaly);
+  const addOrUpdateAlert = useFlightStore(state => state.addOrUpdateAlert);
+  const resolveAlert = useFlightStore(state => state.resolveAlert);
   const isMuted = useFlightStore(state => state.isMuted);
   const lastRefresh = useFlightStore(state => state.lastRefresh);
   const selectedRegion = useFlightStore(state => state.selectedRegion);
-  const setAircraftData = useFlightStore(state => state.setAircraftData);
+  const riskScores = useFlightStore(state => state.riskScores);
   
   const processedTimestamps = useRef(new Set());
 
@@ -43,78 +42,80 @@ export function useAnomalyEngine() {
     // Only process if we have a new refresh block
     if (!lastRefresh || processedTimestamps.current.has(lastRefresh)) return;
     
-    // Add to processed to prevent duplicate engine runs for the same data
     processedTimestamps.current.add(lastRefresh);
-    // Keep set small
     if (processedTimestamps.current.size > 10) {
       const arr = Array.from(processedTimestamps.current);
       processedTimestamps.current = new Set(arr.slice(arr.length - 5));
     }
 
     let playedSoundThisTick = false;
+    const newRiskScores = new Map(riskScores);
+    let storeChanged = false;
 
-    // Scan all aircraft for anomalies
     aircraftArray.forEach(aircraft => {
-      const anomalyResult = checkAnomalies(aircraft);
+      const prevResult = riskScores.get(aircraft.id);
+      const prevScore = prevResult ? prevResult.score : 0;
       
-      if (anomalyResult) {
-        // We found an anomaly!
-        const anomalyRecord = {
-          id: `${aircraft.id}-${anomalyResult.type}-${lastRefresh}`,
+      const riskResult = computeRiskScore(aircraft, prevScore);
+      newRiskScores.set(aircraft.id, riskResult);
+      storeChanged = true;
+
+      // > 25 means CAUTION, WARNING, or CRITICAL -> Active Anomaly
+      if (riskResult.score > 25) {
+        // Construct alert record
+        const alertRecord = {
+          id: `${aircraft.id}-${lastRefresh}`,
           icao24: aircraft.id,
-          callsign: aircraft.callsign,
-          type: anomalyResult.type,
-          severity: anomalyResult.severity,
-          altitude: aircraft.altitude,
-          speed: aircraft.speed,
-          verticalRate: aircraft.verticalRate,
-          squawk: aircraft.squawk,
+          callsign: aircraft.callsign || aircraft.id,
+          riskScore: riskResult.score,
+          reasons: riskResult.rules.map(r => ({ type: r.id, label: r.label, severity: riskResult.threshold })),
           lat: aircraft.lat,
           lng: aircraft.lng,
+          altitude: aircraft.altitude,
+          speed: aircraft.speed,
+          squawk: aircraft.squawk,
           region: selectedRegion.key,
-          detectedAt: new Date().toISOString()
+          detectedAt: new Date().toISOString(),
+          isResolved: false,
+          resolvedAt: null
         };
         
-        addAnomaly(anomalyRecord);
-        
+        addOrUpdateAlert(alertRecord);
+
         // Asynchronously log to Supabase
         if (supabase) {
           supabase.from('anomaly_log').insert([{
-            icao24: anomalyRecord.icao24,
-            callsign: anomalyRecord.callsign,
-            anomaly_type: anomalyRecord.type,
-            severity: anomalyRecord.severity,
-            altitude_ft: Math.round(anomalyRecord.altitude),
-            speed_kts: Math.round(anomalyRecord.speed),
-            vertical_rate_fpm: Math.round(anomalyRecord.verticalRate),
-            squawk: anomalyRecord.squawk,
-            latitude: anomalyRecord.lat,
-            longitude: anomalyRecord.lng,
-            region: anomalyRecord.region
+            icao24: alertRecord.icao24,
+            callsign: alertRecord.callsign,
+            anomaly_type: alertRecord.reasons.map(r => r.type).join(','),
+            severity: riskResult.threshold,
+            altitude_ft: Math.round(alertRecord.altitude),
+            speed_kts: Math.round(alertRecord.speed),
+            vertical_rate_fpm: Math.round(aircraft.verticalRate || 0),
+            squawk: alertRecord.squawk,
+            latitude: alertRecord.lat,
+            longitude: alertRecord.lng,
+            region: alertRecord.region,
+            risk_score: riskResult.score
           }]).then(({ error }) => {
             if (error) console.error("Supabase anomaly_log insert error:", error.message);
           });
         }
+      } else {
+        // Score <= 25 (NORMAL or WATCH), resolve active alerts
+        resolveAlert(aircraft.id);
+      }
 
-        // Play sound if critical, not muted, and we haven't played one this tick yet to avoid ear rape
-        if (anomalyResult.severity === ANOMALY_SEVERITY.CRITICAL && !isMuted && !playedSoundThisTick) {
-          playCriticalBeep();
-          playedSoundThisTick = true;
-        }
+      // Play sound if critical, not muted, and we haven't played one this tick yet
+      if (riskResult.isNewCritical && !isMuted && !playedSoundThisTick) {
+        playCriticalBeep();
+        playedSoundThisTick = true;
       }
     });
 
-    // Enrich aircraft with anomaly data for rendering
-    const enriched = aircraftArray.map(ac => {
-      const result = checkAnomalies(ac);
-      return result 
-        ? { ...ac, anomaly: result.type, anomalySeverity: result.severity }
-        : { ...ac, anomaly: null, anomalySeverity: null };
-    });
-    // Only update if something changed
-    if (enriched.some((ac, i) => ac.anomaly !== aircraftArray[i]?.anomaly)) {
-      setAircraftData(enriched, lastRefresh);
+    if (storeChanged) {
+      useFlightStore.setState({ riskScores: newRiskScores });
     }
 
-  }, [aircraftArray, lastRefresh, addAnomaly, isMuted, selectedRegion, setAircraftData]);
+  }, [aircraftArray, lastRefresh, addOrUpdateAlert, resolveAlert, isMuted, selectedRegion]); // removed setAircraftData completely
 }
