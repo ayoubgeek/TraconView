@@ -67,3 +67,17 @@ export const SOURCE_MAP = {
   2: 'MLAT',
   3: 'FLARM'
 };
+
+export const RISK_THRESHOLDS = {
+  NORMAL: 'NORMAL',
+  WATCH: 'WATCH',
+  CAUTION: 'CAUTION',
+  WARNING: 'WARNING',
+  CRITICAL: 'CRITICAL'
+};
+
+export const METAR_CONFIG = {
+  POLL_INTERVAL_MS: 300000, // 5 minutes
+  STALE_MS: 1800000, // 30 minutes
+  WARNING_MS: 3600000 // 60 minutes
+};

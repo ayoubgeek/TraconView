@@ -1,0 +1,8 @@
+[
+  { "icao": "GMMN", "name": "Mohammed V International", "lat": 33.3675, "lng": -7.5899 },
+  { "icao": "GMME", "name": "Rabat-Salé", "lat": 34.0515, "lng": -6.7515 },
+  { "icao": "GMFF", "name": "Fès-Saïs", "lat": 33.9274, "lng": -4.9779 },
+  { "icao": "GMMX", "name": "Marrakech-Menara", "lat": 31.6069, "lng": -8.0363 },
+  { "icao": "GMTT", "name": "Tangier Ibn Battouta", "lat": 35.7269, "lng": -5.9168 },
+  { "icao": "GMAD", "name": "Agadir Al Massira", "lat": 30.3250, "lng": -9.4131 }
+]

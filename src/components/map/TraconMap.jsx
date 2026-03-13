@@ -4,6 +4,11 @@ import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { useFlightStore } from '../../store/flightStore';
 import AircraftLayer from './AircraftLayer';
 import AirspaceLayer from './AirspaceLayer';
+import { useMetar } from '../../hooks/useMetar';
+import { useAirspaceDetection } from '../../hooks/useAirspaceDetection';
+import { usePositionHistory } from '../../hooks/usePositionHistory';
+import { useHoldingDetection } from '../../hooks/useHoldingDetection';
+import HoldingTrails from './HoldingTrails';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -34,6 +39,16 @@ export default function TraconMap() {
   const clearSelectedAircraft = useFlightStore(state => state.clearSelectedAircraft);
   const mapRef = useRef(null);
 
+  // Start polling METAR data for the selected region
+  useMetar();
+  
+  // Start tracking airspace incursions
+  useAirspaceDetection();
+  
+  // Track holding patterns
+  usePositionHistory();
+  useHoldingDetection();
+
   // Center on selected aircraft if requested (e.g., from sidebar)
   useEffect(() => {
     if (selectedAircraftId && mapRef.current) {
@@ -63,7 +78,9 @@ export default function TraconMap() {
         
         <AirspaceLayer />
         
-        <AircraftLayer />
+        <WeatherLayer />
+      <HoldingTrails />
+      <AircraftLayer />
         
         <MapViewHandler />
       </MapContainer>

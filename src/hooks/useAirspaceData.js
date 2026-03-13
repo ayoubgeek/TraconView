@@ -27,7 +27,12 @@ export function useAirspaceData() {
         const res = await fetch(`/data/${fileName}`);
         if (res.ok) {
           const data = await res.json();
+          // Polyfill missing IDs if needed
+          data.features.forEach((f, i) => {
+            if (!f.id) f.id = `zone-${i}`;
+          });
           setGeojsonData(data);
+          useFlightStore.getState().setAirspaceZones(data.features);
         } else {
           setGeojsonData(null);
         }

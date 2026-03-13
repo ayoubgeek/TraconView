@@ -1,0 +1,7 @@
+[
+  { "icao": "EGLL", "name": "London Heathrow", "lat": 51.4700, "lng": -0.4543 },
+  { "icao": "LFPG", "name": "Paris Charles de Gaulle", "lat": 49.0097, "lng": 2.5479 },
+  { "icao": "EDDF", "name": "Frankfurt am Main", "lat": 50.0333, "lng": 8.5705 },
+  { "icao": "EHAM", "name": "Amsterdam Schiphol", "lat": 52.3105, "lng": 4.7683 },
+  { "icao": "LEMD", "name": "Adolfo Suárez Madrid-Barajas", "lat": 40.4839, "lng": -3.5680 }
+]

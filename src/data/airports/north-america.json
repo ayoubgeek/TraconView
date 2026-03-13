@@ -1,0 +1,6 @@
+[
+  { "icao": "KJFK", "name": "John F. Kennedy International", "lat": 40.6413, "lng": -73.7781 },
+  { "icao": "KLAX", "name": "Los Angeles International", "lat": 33.9416, "lng": -118.4085 },
+  { "icao": "KATL", "name": "Hartsfield-Jackson Atlanta", "lat": 33.6407, "lng": -84.4277 },
+  { "icao": "KORD", "name": "Chicago O'Hare", "lat": 41.9742, "lng": -87.9073 }
+]

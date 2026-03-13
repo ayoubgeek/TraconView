@@ -11,7 +11,7 @@ const SEVERITY_COLORS = {
 };
 
 export default function AlertSidebar() {
-  const anomalies = useFlightStore(state => state.anomalies);
+  const alerts = useFlightStore(state => state.alerts);
   const setSelectedAircraft = useFlightStore(state => state.setSelectedAircraft);
   const isSidebarOpen = useFlightStore(state => state.isSidebarOpen);
   const toggleSidebar = useFlightStore(state => state.toggleSidebar);
@@ -39,13 +39,13 @@ export default function AlertSidebar() {
         </div>
 
         <div className="flex-1 overflow-y-auto p-2 space-y-2 relative">
-          {anomalies.length === 0 ? (
+          {alerts.length === 0 ? (
             <div className="absolute inset-0 flex items-center justify-center text-atc-dim text-xs font-ui">
-              No active anomalies
+              No active alerts
             </div>
           ) : (
-            anomalies.map((anomaly) => {
-              const date = new Date(anomaly.detectedAt);
+            alerts.map((alert) => {
+              const date = new Date(alert.detectedAt);
               const hh = date.getUTCHours().toString().padStart(2, '0');
               const mm = date.getUTCMinutes().toString().padStart(2, '0');
               const ss = date.getUTCSeconds().toString().padStart(2, '0');
@@ -53,36 +53,34 @@ export default function AlertSidebar() {
               
               return (
                 <div 
-                  key={anomaly.id}
+                  key={alert.id}
                   onClick={() => {
-                    setSelectedAircraft(anomaly.icao24);
+                    setSelectedAircraft(alert.icao24);
                     // On mobile, close sidebar after tap
                     if (window.innerWidth < 768) {
                       toggleSidebar();
                     }
                   }}
-                  className="bg-radar-bg rounded border border-radar-grid p-3 flex flex-col gap-2 cursor-pointer hover:border-atc-dim hover:bg-[#121a2f] transition-colors"
+                  className={`border border-radar-grid p-3 flex flex-col gap-2 cursor-pointer transition-colors ${alert.isResolved ? 'bg-[#0A0F1A] opacity-50 grayscale line-through hover:opacity-80 hover:bg-[#121a2f]' : 'bg-radar-bg hover:border-atc-dim hover:bg-[#121a2f]'}`}
                 >
                   <div className="flex justify-between items-start">
-                    <span className="text-white font-bold font-ui">{anomaly.callsign || anomaly.icao24}</span>
+                    <span className="text-white font-bold font-ui">{alert.callsign || alert.icao24}</span>
                     <span className="text-atc-dim text-[10px] font-data">{timeStr}</span>
                   </div>
                   
                   <div className="flex justify-between items-end">
-                    <div className="flex flex-col gap-1">
-                      <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border ${SEVERITY_COLORS[anomaly.severity]}`}>
-                        {anomaly.type.replace('_', ' ')}
-                      </span>
+                    <div className="flex flex-col gap-1 w-full">
+                      <div className="flex flex-wrap gap-1">
+                        {alert.reasons?.map((r, i) => (
+                           <span key={i} className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded border ${SEVERITY_COLORS[r.severity] || SEVERITY_COLORS.MEDIUM}`}>
+                             {r.label.substring(0, 20)}
+                           </span>
+                        ))}
+                      </div>
                       <span className="text-atc-dim text-xs font-data">
-                        {Math.round(anomaly.altitude)} ft | {Math.round(anomaly.speed)} kts
+                        Score: {alert.riskScore} | {Math.round(alert.altitude)} ft | {Math.round(alert.speed)} kts
                       </span>
                     </div>
-                    
-                    {(anomaly.type === 'RAPID_DESCENT' || anomaly.verticalRate !== 0) && (
-                      <span className={`text-xs font-data ${anomaly.verticalRate < -2000 ? 'text-orange-400' : 'text-atc-dim'}`}>
-                        {Math.round(anomaly.verticalRate)} fpm
-                      </span>
-                    )}
                   </div>
                 </div>
               );

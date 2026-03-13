@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { Marker, Tooltip, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import { useFlightStore } from '../../store/flightStore';
+import { pointInPolygon, computeBBox } from '../../lib/pointInPolygon';
 
 import AnomalyMarker from './AnomalyMarker';
 
@@ -15,20 +16,37 @@ const COLORS = {
   LOW: '#3B82F6', 
 };
 
-const createPlaneIcon = (color, heading, isSelected) => {
+const THRESHOLD_STYLES = {
+  NORMAL: { color: '#1e6a7a', className: '' },
+  WATCH: { color: '#EAB308', className: 'border-yellow-500 border-2 rounded-full' },
+  CAUTION: { color: '#EAB308', className: '' },
+  WARNING: { color: '#F97316', className: 'animate-[pulse_1.5s_ease-in-out_infinite]' },
+  CRITICAL: { color: '#EF4444', className: 'animate-[ping_0.8s_ease-in-out_infinite] shadow-[0_0_10px_#ef4444] rounded-full' }
+};
+
+const createPlaneIcon = (color, heading, isSelected, size = 20, extraClass = '', isHolding = false, dimmed = false) => {
   const rotation = heading || 0;
-  // A clean, modern airplane silhouette pointing true North (0 degrees)
+  
+  const holdingBadge = isHolding ? `
+    <div style="position: absolute; top: -16px; left: 50%; transform: translateX(-50%); background: rgba(167,139,250,0.2); border: 1px solid #a78bfa; color: #a78bfa; font-size: 8px; font-weight: bold; padding: 2px 4px; border-radius: 4px; box-shadow: 0 0 5px rgba(167,139,250,0.4); white-space: nowrap;">
+      HOLDING
+    </div>
+  ` : '';
+
   const svgContent = `
-    <div style="transform: rotate(${rotation}deg); transform-origin: center center; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="${isSelected ? 24 : 20}" height="${isSelected ? 24 : 20}">
-        <path fill="${color}" fill-opacity="${isSelected ? 1 : 0.8}" stroke="${isSelected ? '#fff' : '#000'}" stroke-width="${isSelected ? 1 : 0.5}"
-          d="M12,2 L14,7 L20,11 L20,13 L14,12 L14,18 L17,20 L17,22 L12,21 L7,22 L7,20 L10,18 L10,12 L4,13 L4,11 L10,7 L12,2 Z" />
-      </svg>
+    <div class="relative ${extraClass}" style="width: ${size}px; height: ${size}px; display: flex; align-items: center; justify-content: center; ${dimmed ? 'opacity: 0.2;' : ''}">
+      ${holdingBadge}
+      <div style="transform: rotate(${rotation}deg); transform-origin: center center; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="${size}" height="${size}">
+          <path fill="${color}" fill-opacity="${dimmed ? 0.3 : (isSelected ? 1 : 0.8)}" stroke="${isSelected ? '#fff' : '#000'}" stroke-width="${isSelected ? 1 : 0.5}"
+            d="M12,2 L14,7 L20,11 L20,13 L14,12 L14,18 L17,20 L17,22 L12,21 L7,22 L7,20 L10,18 L10,12 L4,13 L4,11 L10,7 L12,2 Z" />
+        </svg>
+      </div>
     </div>
   `;
   return L.divIcon({
     html: svgContent,
-    className: 'aircraft-icon',
+    className: 'aircraft-icon ' + extraClass,
     iconSize: [24, 24],
     iconAnchor: [12, 12],
     tooltipAnchor: [0, -12]
@@ -117,49 +135,70 @@ export default function AircraftLayer() {
   const aircraftArray = useFlightStore(state => state.aircraftArray);
   const selectedAircraftId = useFlightStore(state => state.selectedAircraftId);
   const setSelectedAircraft = useFlightStore(state => state.setSelectedAircraft);
+  const riskScores = useFlightStore(state => state.riskScores);
+  
+  const casablancaFirFocus = useFlightStore(state => state.casablancaFirFocus);
+  const airspaceZones = useFlightStore(state => state.airspaceZones);
 
-  // We should only render aircraft with valid coordinates
+  const firFeature = useMemo(() => airspaceZones.find(z => z.properties?.name?.includes('Casablanca FIR') || z.properties?.type === 'FIR'), [airspaceZones]);
+  const firBbox = useMemo(() => firFeature?.geometry?.coordinates?.[0] ? computeBBox(firFeature.geometry.coordinates[0]) : null, [firFeature]);
+
   const validAircraft = useMemo(() => {
     return aircraftArray.filter(ac => ac.lat !== null && ac.lng !== null);
   }, [aircraftArray]);
 
   return (
     <>
-      {/* Draw the track for the selected aircraft ONLY */}
       <SelectedAircraftTrack icao24={selectedAircraftId} />
       
       {validAircraft.map(ac => {
         const isSelected = ac.id === selectedAircraftId;
-        const anomaly = ac.anomaly ? { type: ac.anomaly, severity: ac.anomalySeverity } : null;
+        const riskResult = riskScores.get(ac.id);
+        const threshold = riskResult ? riskResult.threshold : 'NORMAL';
+        const isCriticalOrWarning = threshold === 'CRITICAL' || threshold === 'WARNING';
         
-        // Base color or severity color if anomalous (and not selected)
-        let color = isSelected ? COLORS.SELECTED : COLORS.NORMAL;
-        if (anomaly && !isSelected) {
-          color = COLORS[anomaly.severity] || COLORS.LOW;
+        let color = isSelected ? COLORS.SELECTED : (THRESHOLD_STYLES[threshold]?.color || COLORS.NORMAL);
+        let size = 20;
+        if (threshold === 'WATCH') size = 22;
+        if (threshold === 'CAUTION') size = 24;
+        if (threshold === 'WARNING') size = 28;
+        if (threshold === 'CRITICAL') size = 32;
+        if (isSelected) size = Math.max(size, 24);
+
+        const extraClass = THRESHOLD_STYLES[threshold]?.className || '';
+
+        // FIR Highlight Dimming
+        let isDimmed = false;
+        if (casablancaFirFocus && firFeature && firBbox && !isSelected) {
+           const inside = pointInPolygon(ac.lng, ac.lat, firFeature.geometry, firBbox);
+           if (!inside) {
+             isDimmed = true;
+           }
         }
 
         return (
           <React.Fragment key={ac.id}>
-            {/* If there is an anomaly, render the pulsing ring behind the dot */}
-            {anomaly && (
-              <AnomalyMarker position={[ac.lat, ac.lng]} severity={anomaly.severity} />
+            {isCriticalOrWarning && !isSelected && !isDimmed && (
+               <AnomalyMarker position={[ac.lat, ac.lng]} severity={threshold} />
             )}
             
             <Marker
               position={[ac.lat, ac.lng]}
-              icon={createPlaneIcon(color, ac.heading, isSelected)}
+              icon={createPlaneIcon(color, ac.heading, isSelected, size, extraClass, ac.isHolding, isDimmed)}
               eventHandlers={{
                 click: (e) => {
-                  L.DomEvent.stopPropagation(e); // Block map click from firing and immediately clearing
+                  L.DomEvent.stopPropagation(e);
                   setSelectedAircraft(ac.id);
                 }
               }}
             >
               <Tooltip direction="top" offset={[0, -10]} className="bg-radar-bg text-atc-green border-radar-grid font-data text-xs" opacity={0.9}>
                 <div className="flex flex-col">
-                  <span className="font-bold">{ac.callsign}</span>
+                  <span className="font-bold">{ac.callsign || ac.id}</span>
                   <span>{Math.round(ac.altitude).toLocaleString()} ft | {Math.round(ac.speed)} kts</span>
-                  {anomaly && <span className="font-bold mt-1" style={{color: COLORS[anomaly.severity]}}>{anomaly.type.replace('_', ' ')}</span>}
+                  {riskResult && riskResult.score > 0 && (
+                    <span className="font-bold mt-1" style={{color}}>Score: {riskResult.score} ({threshold})</span>
+                  )}
                 </div>
               </Tooltip>
             </Marker>
