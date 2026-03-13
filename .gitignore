@@ -31,6 +31,8 @@ PROMPT.md
 RULES.md
 .cursorrules
 .windsurfrules
+.agent/
+.specify/
 .claude/
 .cursor/
 .windsurf/
