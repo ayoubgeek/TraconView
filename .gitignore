@@ -33,6 +33,7 @@ RULES.md
 .windsurfrules
 .agent/
 .specify/
+specs/
 .claude/
 .cursor/
 .windsurf/
