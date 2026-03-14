@@ -49,7 +49,7 @@ export function computeOccupancy(aircraftArray, preparedAirspaces) {
 
   const incursionsMap = classifyAircraftByAirspace(aircraftArray, preparedAirspaces);
 
-  for (const [acId, features] of incursionsMap.entries()) {
+  for (const features of incursionsMap.values()) {
     for (const feature of features) {
       if (feature.id) {
         occupancyMap.set(feature.id, (occupancyMap.get(feature.id) || 0) + 1);

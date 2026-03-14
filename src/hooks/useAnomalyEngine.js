@@ -117,5 +117,6 @@ export function useAnomalyEngine() {
       useFlightStore.setState({ riskScores: newRiskScores });
     }
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [aircraftArray, lastRefresh, addOrUpdateAlert, resolveAlert, isMuted, selectedRegion]); // removed setAircraftData completely
 }

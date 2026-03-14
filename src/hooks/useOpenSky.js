@@ -104,6 +104,7 @@ export function useOpenSky() {
         scheduleNext(POLL_INTERVAL_MS);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedRegion, setAircraftData, setConnectionStatus]);
 
   const scheduleNext = (delay) => {

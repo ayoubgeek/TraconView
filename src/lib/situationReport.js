@@ -2,7 +2,6 @@ import { formatAltitude, formatHeadingWithCardinal } from './formatters';
 
 export function generateSituationReport(aircraft, riskResult, nearestAirport, metar = null) {
   const status = aircraft.onGround ? 'ON GROUND' : (aircraft.isHolding ? 'HOLDING PATTERN' : 'IN FLIGHT');
-  const padHeading = Math.round(aircraft.heading || 0).toString().padStart(3, '0');
   
   let formattedVerticalRate = 'Level';
   if (aircraft.verticalRate > 200) formattedVerticalRate = `↑ ${Math.round(aircraft.verticalRate)} ft/min`;

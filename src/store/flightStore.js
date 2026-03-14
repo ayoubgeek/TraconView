@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { REGIONS, DEFAULT_REGION, MAX_ANOMALY_HISTORY } from '../lib/constants';
 import { updatePositionHistory as pureUpdatePositionHistory } from '../lib/holdingDetector';
 
-export const useFlightStore = create((set, get) => ({
+export const useFlightStore = create((set) => ({
   // Data State
   aircraft: {},
   aircraftArray: [],

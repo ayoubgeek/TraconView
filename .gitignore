@@ -41,3 +41,6 @@ specs/
 PROMPT-*.md
 *_AGENT_*.md
 CLAUDE.md
+
+.env
+.env.*
