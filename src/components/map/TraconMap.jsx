@@ -10,6 +10,7 @@ import { usePositionHistory } from '../../hooks/usePositionHistory';
 import { useHoldingDetection } from '../../hooks/useHoldingDetection';
 import HoldingTrails from './HoldingTrails';
 import WeatherLayer from './WeatherLayer';
+import MapLegend from './MapLegend';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -80,8 +81,9 @@ export default function TraconMap() {
         <AirspaceLayer />
         
         <WeatherLayer />
-      <HoldingTrails />
-      <AircraftLayer />
+        <HoldingTrails />
+        <AircraftLayer />
+        <MapLegend />
         
         <MapViewHandler />
       </MapContainer>
