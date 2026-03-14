@@ -1,15 +1,51 @@
-import React, { useMemo, useState, useEffect } from 'react';
-import { Polyline } from 'react-leaflet';
+import React, { useMemo, useEffect, useRef, useState } from 'react';
+import { Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { useFlightStore } from '../../store/flightStore';
 import { pointInPolygon, computeBBox } from '../../lib/pointInPolygon';
-import { CLUSTER_DISABLE_AT_ZOOM, STALE_AIRCRAFT_TTL_MS } from '../../lib/constants';
+import { CLUSTER_DISABLE_AT_ZOOM, STALE_AIRCRAFT_TTL_MS, CALLSIGN_LABEL_MIN_ZOOM, ANOMALY_SEVERITY } from '../../lib/constants';
+import { getCategorizedIcon } from '../../lib/iconUtils';
+import { updateMarkersImperatively } from '../../lib/aircraftDiff';
 
-import AircraftMarker from './AircraftMarker';
-import AnomalyMarker from './AnomalyMarker';
+// Re-implement the anomaly icon creation so we can pass it to aircraftDiff
+const createPulseIcon = (severity) => {
+  let colorClass = 'bg-blue-500'; // LOW
+  let ringClass = 'ring-blue-500/50';
+  
+  if (severity === ANOMALY_SEVERITY.CRITICAL) {
+    colorClass = 'bg-red-500';
+    ringClass = 'ring-red-500/50';
+  } else if (severity === ANOMALY_SEVERITY.HIGH) {
+    colorClass = 'bg-orange-500';
+    ringClass = 'ring-orange-500/50';
+  } else if (severity === ANOMALY_SEVERITY.MEDIUM) {
+    colorClass = 'bg-yellow-500';
+    ringClass = 'ring-yellow-500/50';
+  }
 
-// ... Keep existing SelectedAircraftTrack ...
+  const htmlString = `
+    <div class="relative flex items-center justify-center w-full h-full">
+      <div class="absolute w-8 h-8 rounded-full ${colorClass} opacity-40 animate-ping"></div>
+      <div class="relative w-4 h-4 rounded-full ${colorClass} ring-4 ${ringClass} shadow-[0_0_15px_rgba(0,0,0,0.5)]"></div>
+    </div>
+  `;
+
+  return L.divIcon({
+    html: htmlString,
+    className: 'bg-transparent border-none',
+    iconSize: [24, 24],
+    iconAnchor: [12, 12]
+  });
+};
+
+const ANOMALY_ICONS = {
+  [ANOMALY_SEVERITY.CRITICAL]: createPulseIcon(ANOMALY_SEVERITY.CRITICAL),
+  [ANOMALY_SEVERITY.HIGH]: createPulseIcon(ANOMALY_SEVERITY.HIGH),
+  [ANOMALY_SEVERITY.MEDIUM]: createPulseIcon(ANOMALY_SEVERITY.MEDIUM),
+  [ANOMALY_SEVERITY.LOW]: createPulseIcon(ANOMALY_SEVERITY.LOW),
+};
+
 function SelectedAircraftTrack({ icao24 }) {
   const [trackChunks, setTrackChunks] = useState([]);
 
@@ -27,13 +63,12 @@ function SelectedAircraftTrack({ icao24 }) {
           const data = await res.json();
           if (isMounted && data.path && data.path.length > 0) {
             
-            // Generate altitude-colored segments
             const getAltColor = (m) => {
               const ft = m * 3.28084;
-              if (ft > 30000) return '#C084FC'; // purple
-              if (ft > 20000) return '#10B981'; // green
-              if (ft > 10000) return '#F59E0B'; // yellow
-              return '#EF4444'; // red
+              if (ft > 30000) return '#C084FC';
+              if (ft > 20000) return '#10B981';
+              if (ft > 10000) return '#F59E0B';
+              return '#EF4444';
             };
 
             const chunks = [];
@@ -41,7 +76,6 @@ function SelectedAircraftTrack({ icao24 }) {
             let currentColor = null;
 
             data.path.forEach(pt => {
-              // pt[1]=lat, pt[2]=lng, pt[3]=baro_alt
               const c = getAltColor(pt[3] || 0);
               const ll = [pt[1], pt[2]];
               
@@ -92,11 +126,32 @@ function SelectedAircraftTrack({ icao24 }) {
 const createClusterCustomIcon = function (cluster) {
   const count = cluster.getChildCount();
   return L.divIcon({
-    html: `<div class="bg-radar-panel border-[1px] border-atc-green text-atc-green rounded-full flex items-center justify-center font-bold text-xs" style="width: 32px; height: 32px; box-shadow: 0 0 10px rgba(0,0,0,0.5);">${count}</div>`,
+    html: `<div class="bg-[#1A2235] border-[1px] border-atc-green text-atc-green rounded-full flex items-center justify-center font-bold text-xs" style="width: 32px; height: 32px; box-shadow: 0 0 10px rgba(0,0,0,0.5);">${count}</div>`,
     className: 'custom-marker-cluster border-none bg-transparent',
     iconSize: L.point(32, 32, true)
   });
 };
+
+// Component to handle toggling global tooltips via body class based on Map zoom
+function ZoomLabelController() {
+  const map = useMap();
+  useEffect(() => {
+    const applyLabelVisibility = () => {
+      if (map.getZoom() >= CALLSIGN_LABEL_MIN_ZOOM) {
+        document.body.classList.remove('hide-callsign-labels');
+      } else {
+        document.body.classList.add('hide-callsign-labels');
+      }
+    };
+    applyLabelVisibility();
+    map.on('zoomend', applyLabelVisibility);
+    return () => {
+      map.off('zoomend', applyLabelVisibility);
+      document.body.classList.remove('hide-callsign-labels');
+    };
+  }, [map]);
+  return null;
+}
 
 export default function AircraftLayer() {
   const filteredAircraft = useFlightStore(state => state.filteredAircraft);
@@ -114,51 +169,41 @@ export default function AircraftLayer() {
     return filteredAircraft.filter(ac => ac.lat !== null && ac.lng !== null);
   }, [filteredAircraft]);
 
+  const clusterGroupRef = useRef(null);
+  const markerMapRef = useRef(new Map());
+
+  // Execute imperative update bounds
+  useEffect(() => {
+    if (!clusterGroupRef.current) return;
+    
+    updateMarkersImperatively(markerMapRef.current, validAircraft, clusterGroupRef.current, getCategorizedIcon, {
+      selectedAircraftId,
+      onClick: setSelectedAircraft,
+      casablancaFirFocus,
+      firFeature,
+      firBbox,
+      pointInPolygon,
+      STALE_AIRCRAFT_TTL_MS,
+      riskScores,
+      anomalyIcons: ANOMALY_ICONS
+    });
+
+  }, [validAircraft, selectedAircraftId, casablancaFirFocus, firFeature, firBbox, riskScores, setSelectedAircraft]);
+
   return (
     <>
       <SelectedAircraftTrack icao24={selectedAircraftId} />
+      <ZoomLabelController />
       
       <MarkerClusterGroup
+        ref={clusterGroupRef}
         chunkedLoading
         disableClusteringAtZoom={CLUSTER_DISABLE_AT_ZOOM}
         maxClusterRadius={(zoom) => zoom < 6 ? 80 : 40}
         spiderfyOnMaxZoom={true}
         iconCreateFunction={createClusterCustomIcon}
       >
-        {validAircraft.map(ac => {
-          const isSelected = ac.id === selectedAircraftId;
-          const riskResult = riskScores.get(ac.id);
-          const threshold = riskResult ? riskResult.threshold : 'NORMAL';
-          const isCriticalOrWarning = threshold === 'CRITICAL' || threshold === 'WARNING';
-          
-          // eslint-disable-next-line react-hooks/purity
-          const isStale = (Date.now() - Math.floor(ac.lastSeen * 1000)) > STALE_AIRCRAFT_TTL_MS;
-
-          // FIR Highlight logic from before (will refine visually later if needed, 
-          // but mainly we just dim the rendering if not in FIR)
-          let isDimmed = false;
-          if (casablancaFirFocus && firFeature && firBbox && !isSelected) {
-             const inside = pointInPolygon(ac.lng, ac.lat, firFeature.geometry, firBbox);
-             if (!inside) {
-               isDimmed = true;
-             }
-          }
-
-          return (
-            <React.Fragment key={ac.id}>
-              {isCriticalOrWarning && !isSelected && !isDimmed && (
-                 <AnomalyMarker position={[ac.lat, ac.lng]} severity={threshold} />
-              )}
-              
-              <AircraftMarker 
-                aircraft={ac} 
-                isSelected={isSelected} 
-                isStale={isStale || isDimmed}
-                onClick={setSelectedAircraft}
-              />
-            </React.Fragment>
-          );
-        })}
+        {/* No declarative JSX markers inside. Handled imperatively by aircraftDiff.js for Performance Optimization */}
       </MarkerClusterGroup>
     </>
   );

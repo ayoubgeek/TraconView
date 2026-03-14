@@ -1,18 +1,14 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import AppLayout from './components/layout/AppLayout';
 import TraconMap from './components/map/TraconMap';
-import StatsPanel from './components/panels/StatsPanel';
 
-// Placeholders for panels that will be built in later phases
-const SavedViewPanelPlaceholder = () => (
-  <div className="p-4 border border-dashed border-slate-700 m-4 rounded text-center text-slate-500 text-sm">
-    Saved Views (Phase 11)
-  </div>
-);
+const StatsPanel = lazy(() => import('./components/panels/StatsPanel'));
+const SavedViewPanel = lazy(() => import('./components/panels/SavedViewPanel'));
+const AircraftDetailDrawer = lazy(() => import('./components/panels/AircraftDetailDrawer'));
 
-const DetailDrawerPlaceholder = () => (
-  <div className="p-4 border border-dashed border-slate-700 m-4 h-[calc(100%-2rem)] rounded text-center text-slate-500 text-sm flex items-center justify-center">
-    Detail Panel (Phase 9)
+const PanelSkeleton = () => (
+  <div className="p-4 m-4 rounded animate-pulse bg-slate-800/20 md:bg-[#1A2235]/50 h-32 flex items-center justify-center text-slate-500 text-sm border border-slate-700/50">
+    Loading...
   </div>
 );
 
@@ -21,14 +17,22 @@ function App() {
     <AppLayout
       sidebar={
         <div className="flex flex-col h-full bg-[#0A0F1A]">
-          <SavedViewPanelPlaceholder />
+          <Suspense fallback={<PanelSkeleton />}>
+            <SavedViewPanel />
+          </Suspense>
           {/* StatsPanel is pinned to the bottom of the sidebar */}
           <div className="mt-auto border-t border-slate-800 bg-[#0A0F1A]">
-             <StatsPanel />
+            <Suspense fallback={<PanelSkeleton />}>
+               <StatsPanel />
+            </Suspense>
           </div>
         </div>
       }
-      rightDrawer={<DetailDrawerPlaceholder />}
+      rightDrawer={
+        <Suspense fallback={<div className="h-full flex flex-col"><PanelSkeleton /></div>}>
+          <AircraftDetailDrawer />
+        </Suspense>
+      }
     >
       <TraconMap />
     </AppLayout>
