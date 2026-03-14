@@ -1,14 +1,17 @@
 // src/components/ui/Header.jsx
-import React from 'react';
+import React, { useState } from 'react';
 import { useFlightStore } from '../../store/flightStore';
 import StatusIndicator from './StatusIndicator';
 import RegionSelector from '../panels/RegionSelector';
 import AirspaceToggle from './AirspaceToggle';
 import ExportButton from './ExportButton';
 import SearchBar from './SearchBar';
+import FilterChips from './FilterChips';
+import AdvancedFilterDrawer from '../panels/AdvancedFilterDrawer';
 import { Volume2, VolumeX, Radar, Bell, Camera } from 'lucide-react';
 
 export default function Header() {
+  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
   const aircraftArray = useFlightStore(state => state.aircraftArray);
   const isMuted = useFlightStore(state => state.isMuted);
   const toggleMute = useFlightStore(state => state.toggleMute);
@@ -16,7 +19,8 @@ export default function Header() {
   const toggleScreenshotMode = useFlightStore(state => state.toggleScreenshotMode);
 
   return (
-    <header className="absolute top-4 left-4 right-4 z-[1000] flex justify-between items-start pointer-events-none">
+    <>
+      <header className="absolute top-4 left-4 right-4 z-[1000] flex justify-between items-start pointer-events-none">
       
       {/* Left side: Logo and Status */}
       <div className="flex flex-col gap-2 pointer-events-auto">
@@ -32,6 +36,13 @@ export default function Header() {
         
         <div className="bg-radar-bg/80 backdrop-blur-md border border-radar-grid rounded px-3 py-1.5 flex items-center shadow w-fit">
           <StatusIndicator />
+        </div>
+        
+        <div className="mt-1 max-w-full sm:max-w-xl">
+          <FilterChips 
+            onToggleAdvanced={() => setIsAdvancedOpen(!isAdvancedOpen)} 
+            isAdvancedOpen={isAdvancedOpen} 
+          />
         </div>
       </div>
 
@@ -77,5 +88,11 @@ export default function Header() {
       </div>
 
     </header>
+
+    <AdvancedFilterDrawer 
+      isOpen={isAdvancedOpen} 
+      onClose={() => setIsAdvancedOpen(false)} 
+    />
+    </>
   );
 }
