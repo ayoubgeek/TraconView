@@ -47,6 +47,13 @@ export function applyFilters(aircraftMap, filters, pinnedIds = new Set()) {
       continue;
     }
 
+    // Squawk Codes
+    if (filters.squawkCodes && filters.squawkCodes.length > 0) {
+      if (!ac.squawk || !filters.squawkCodes.includes(ac.squawk)) {
+        continue;
+      }
+    }
+
     // Search Term (ID or Callsign)
     if (hasSearch) {
       let matched = false;
