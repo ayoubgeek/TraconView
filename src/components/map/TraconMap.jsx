@@ -54,12 +54,24 @@ export default function TraconMap() {
   // Center on selected aircraft if requested (e.g., from sidebar)
   useEffect(() => {
     if (selectedAircraftId && mapRef.current) {
-      const ac = aircraft[selectedAircraftId];
+      const ac = aircraft instanceof Map ? aircraft.get(selectedAircraftId) : aircraft[selectedAircraftId];
       if (ac && ac.lat && ac.lng) {
         mapRef.current.flyTo([ac.lat, ac.lng], 9, { animate: true, duration: 1.0 });
       }
     }
   }, [selectedAircraftId, aircraft]);
+
+  // Center Map via Custom Event (from Search engine)
+  useEffect(() => {
+    const handleCenterMap = (e) => {
+      const ac = e.detail.aircraft;
+      if (ac && ac.lat && ac.lng && mapRef.current) {
+        mapRef.current.flyTo([ac.lat, ac.lng], 10, { animate: true, duration: 1.0 });
+      }
+    };
+    window.addEventListener('center-map-on-aircraft', handleCenterMap);
+    return () => window.removeEventListener('center-map-on-aircraft', handleCenterMap);
+  }, []);
 
   return (
     <div className="w-full h-full relative bg-radar-bg z-0 border border-radar-grid rounded-lg overflow-hidden flex-1">

@@ -1,22 +1,10 @@
 // src/components/ui/StatusIndicator.jsx
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useFlightStore } from '../../store/flightStore';
-
+import LiveClock from './LiveClock';
 export default function StatusIndicator() {
   const connectionStatus = useFlightStore(state => state.connectionStatus);
   const lastRefresh = useFlightStore(state => state.lastRefresh);
-  const [timeAgo, setTimeAgo] = useState(0);
-
-  // Update time ago every second
-  useEffect(() => {
-    if (!lastRefresh) return;
-    
-    const interval = setInterval(() => {
-      setTimeAgo(Math.floor((Date.now() - lastRefresh) / 1000));
-    }, 1000);
-    
-    return () => clearInterval(interval);
-  }, [lastRefresh]);
 
   let statusColor = 'bg-green-500';
   let textColor = 'text-green-500';
@@ -40,7 +28,7 @@ export default function StatusIndicator() {
       </div>
       {lastRefresh && (
         <span className="text-atc-dim">
-          | REF: {timeAgo}s
+          | <LiveClock lastRefresh={lastRefresh} label="REF" />
         </span>
       )}
     </div>
