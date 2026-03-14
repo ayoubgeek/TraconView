@@ -1,35 +1,38 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from 'react';
+import AppLayout from './components/layout/AppLayout';
+import TraconMap from './components/map/TraconMap';
+import StatsPanel from './components/panels/StatsPanel';
+
+// Placeholders for panels that will be built in later phases
+const SavedViewPanelPlaceholder = () => (
+  <div className="p-4 border border-dashed border-slate-700 m-4 rounded text-center text-slate-500 text-sm">
+    Saved Views (Phase 11)
+  </div>
+);
+
+const DetailDrawerPlaceholder = () => (
+  <div className="p-4 border border-dashed border-slate-700 m-4 h-[calc(100%-2rem)] rounded text-center text-slate-500 text-sm flex items-center justify-center">
+    Detail Panel (Phase 9)
+  </div>
+);
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <AppLayout
+      sidebar={
+        <div className="flex flex-col h-full bg-[#0A0F1A]">
+          <SavedViewPanelPlaceholder />
+          {/* StatsPanel is pinned to the bottom of the sidebar */}
+          <div className="mt-auto border-t border-slate-800 bg-[#0A0F1A]">
+             <StatsPanel />
+          </div>
+        </div>
+      }
+      rightDrawer={<DetailDrawerPlaceholder />}
+    >
+      <TraconMap />
+    </AppLayout>
+  );
 }
 
-export default App
+export default App;

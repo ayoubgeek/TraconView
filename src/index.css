@@ -1,68 +1,40 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@import "tailwindcss";
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+@theme {
+  --font-ui: "Inter", system-ui, sans-serif;
+  --font-data: "JetBrains Mono", "Roboto Mono", monospace;
+  
+  /* Core brand colors */
+  --color-radar-bg: #050A15;
+  --color-radar-grid: #1A2235;
+  --color-atc-green: #22c55e;
+  --color-atc-dim: #94a3b8;
+  --color-atc-text: #f8fafc;
+  --color-atc-value: #e2e8f0;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  /* Category accent colors */
+  --color-cat-commercial: #3b82f6;
+  --color-cat-military: #d97706;
+  --color-cat-emergency: #ef4444;
+  --color-cat-cargo: #6366f1;
+  --color-cat-bizjet: #8b5cf6;
+  --color-cat-heli: #10b981;
+  --color-cat-ga: #14b8a6;
+  --color-cat-unknown: #6b7280;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+@layer base {
+  body {
+    background-color: var(--color-radar-bg);
+    color: var(--color-atc-text);
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+}
+
+/* Performance optimization for map markers */
+.aircraft-icon {
+  will-change: transform;
+  contain: layout style paint;
 }
