@@ -3,6 +3,7 @@ import { useFlightStore } from '../../store/flightStore';
 import { useRadarSnapshot } from '../../hooks/useRadarSnapshot';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area, ScatterChart, Scatter, ZAxis } from 'recharts';
 import { Activity, Clock, AlertTriangle, Plane, ShieldCheck, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
+import LiveClock from '../ui/LiveClock';
 
 const DONUT_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316', '#6366F1', '#84CC16'];
 const SCORE_COLORS = {

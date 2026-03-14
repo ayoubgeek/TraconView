@@ -5,6 +5,7 @@ import StatusIndicator from './StatusIndicator';
 import RegionSelector from '../panels/RegionSelector';
 import AirspaceToggle from './AirspaceToggle';
 import ExportButton from './ExportButton';
+import SearchBar from './SearchBar';
 import { Volume2, VolumeX, Radar, Bell, Camera } from 'lucide-react';
 
 export default function Header() {
@@ -32,6 +33,11 @@ export default function Header() {
         <div className="bg-radar-bg/80 backdrop-blur-md border border-radar-grid rounded px-3 py-1.5 flex items-center shadow w-fit">
           <StatusIndicator />
         </div>
+      </div>
+
+      {/* Center: Search */}
+      <div className="absolute left-1/2 top-0 -translate-x-1/2 pointer-events-auto mt-2">
+        <SearchBar />
       </div>
 
       {/* Right side: Global Stats and Controls */}
