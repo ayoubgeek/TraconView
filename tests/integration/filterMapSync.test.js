@@ -35,6 +35,19 @@ describe('Filter Map Sync Integration', () => {
       expect(state.filteredAircraft.map(ac => ac.id)).toEqual(expect.arrayContaining(['1', '3']));
   });
 
+  it('confirms filtered-out aircraft are truly absent from the array (T045)', () => {
+      // Apply filter for military
+      useFlightStore.getState().setFilters({ categories: ['military'] });
+      
+      const state = useFlightStore.getState();
+      
+      // The array passed to AircraftLayer MUST contain zero aircraft of type commercial or helicopter
+      const hasExcluded = state.filteredAircraft.some(ac => ac.category !== 'military');
+      
+      // Validating FR-034/FR-036: filtered-out aircraft are truly absent from the rendered array
+      expect(hasExcluded).toBe(false);
+  });
+
   it('verifies cross-property AND logic: military + altitude band', () => {
       // Filter military AND altitude between 8000 and 15000
       useFlightStore.getState().setFilters({ 
