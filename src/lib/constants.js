@@ -81,3 +81,22 @@ export const METAR_CONFIG = {
   STALE_MS: 1800000, // 30 minutes
   WARNING_MS: 3600000 // 60 minutes
 };
+
+export const AIRCRAFT_CATEGORY_COLORS = {
+  commercial: '#3b82f6',
+  military: '#d97706',
+  'emergency/anomaly': '#ef4444',
+  cargo: '#6366f1',
+  business_jet: '#8b5cf6',
+  helicopter: '#10b981',
+  general_aviation: '#14b8a6',
+  unknown: '#6b7280'
+};
+
+export const SNAPSHOT_POLL_INTERVAL_MS = 60000;
+export const SNAPSHOT_RETENTION_HOURS = 24;
+export const CLUSTER_DISABLE_AT_ZOOM = 9;
+export const HEADING_QUANTIZE_STEP = 5;
+export const STALE_AIRCRAFT_TTL_MS = 60000;
+export const CALLSIGN_LABEL_MIN_ZOOM = 9;
+export const FILTER_DEBOUNCE_MS = 150;
