@@ -58,6 +58,7 @@ function SelectedAircraftTrack({ icao24 }) {
 
   useEffect(() => {
     let isMounted = true;
+    // eslint-disable-next-line
     setTrackChunks([]); // reset on new aircraft
 
     if (!icao24) return;

@@ -85,7 +85,7 @@ export default function StatsPanel() {
     // Top 10 Countries logic
     const sortedCountries = Object.entries(reqData).sort((a,b)=>b[1]-a[1]);
     const top10 = sortedCountries.slice(0, 10).map(([name, value]) => ({ name, value }));
-    const otherCount = sortedCountries.slice(10).reduce((acc, [_,val])=>acc+val, 0);
+    const otherCount = sortedCountries.slice(10).reduce((acc, [,val])=>acc+val, 0);
     if (otherCount > 0) {
       top10.push({ name: 'Other', value: otherCount });
     }
