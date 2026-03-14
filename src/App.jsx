@@ -12,11 +12,16 @@ const PanelSkeleton = () => (
   </div>
 );
 
+const PinnedFlightsList = lazy(() => import('./components/panels/PinnedFlightsList'));
+
 function App() {
   return (
     <AppLayout
       sidebar={
         <div className="flex flex-col h-full bg-[#0A0F1A]">
+          <Suspense fallback={<PanelSkeleton />}>
+            <PinnedFlightsList />
+          </Suspense>
           <Suspense fallback={<PanelSkeleton />}>
             <SavedViewPanel />
           </Suspense>
