@@ -1,3 +1,13 @@
+// @ts-check
+/** @import { Aircraft, FilterConfiguration } from '../types/index.js' */
+
+/**
+ * Filter aircraft map based on provided configuration
+ * @param {Map<string, Aircraft>} aircraftMap
+ * @param {any} filters  // Using any because filter object can have arbitrarily named fields like speedMin which are not in FilterConfiguration
+ * @param {Set<string>} pinnedIds
+ * @returns {Map<string, Aircraft>}
+ */
 export function applyFilters(aircraftMap, filters, pinnedIds = new Set()) {
   const result = new Map();
 

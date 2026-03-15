@@ -3,16 +3,18 @@ import Header from '../ui/Header';
 import { useFlightStore } from '../../store/flightStore';
 import { ChevronLeft, ChevronRight, Menu } from 'lucide-react';
 import ErrorBoundary from '../ui/ErrorBoundary';
+import { ViewModeContext } from '../../context/ViewModeContext';
 
 export default function AppLayout({ header, sidebar, rightDrawer, children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [viewMode, setViewMode] = useState('map');
   const selectedAircraftId = useFlightStore(state => state.selectedAircraftId);
 
-  // In the real app, we pass Header as the `header` prop or just render it.
   const topBar = header || <Header />;
 
   return (
-    <div className="flex flex-col h-screen w-full bg-[#050A15] text-slate-100 overflow-hidden font-ui">
+    <ViewModeContext.Provider value={{ viewMode, setViewMode }}>
+      <div className="flex flex-col h-screen w-full bg-[#050A15] text-slate-100 overflow-hidden font-ui">
       {/* Top Bar Slot */}
       <header className="h-16 border-b border-slate-800 bg-[#0A0F1A] z-[100] flex-none relative">
         {topBar}
@@ -84,5 +86,6 @@ export default function AppLayout({ header, sidebar, rightDrawer, children }) {
         </aside>
       </div>
     </div>
+    </ViewModeContext.Provider>
   );
 }

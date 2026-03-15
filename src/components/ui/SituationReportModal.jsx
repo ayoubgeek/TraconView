@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { X, Copy, Check } from 'lucide-react';
+import { X, Copy, Check, Download, ExternalLink } from 'lucide-react';
+import { UI_INTERVALS } from '../../lib/constants';
 
 export default function SituationReportModal({ report, onClose }) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(report);
+    navigator.clipboard.writeText(JSON.stringify(report, null, 2));
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopied(false), UI_INTERVALS.COPIED_TIMEOUT_MS);
   };
 
   if (!report) return null;

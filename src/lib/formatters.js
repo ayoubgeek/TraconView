@@ -23,6 +23,16 @@ export function formatAltitude(altitudeFt) {
   return `${Math.round(altitudeFt).toLocaleString()} ft`;
 }
 
+export function formatSpeed(speedKts) {
+  if (speedKts === null || speedKts === undefined) return 'N/A';
+  return `${Math.round(speedKts)} kts`;
+}
+
+export function formatHeading(headingDeg) {
+  if (headingDeg === null || headingDeg === undefined) return 'N/A';
+  return `${Math.round(headingDeg).toString().padStart(3, '0')}°`;
+}
+
 export function formatHeadingWithCardinal(heading) {
   if (heading === null || heading === undefined) return 'N/A';
   const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'N'];

@@ -1,3 +1,6 @@
+// @ts-check
+/** @import { Aircraft, SearchResult } from '../types/index.js' */
+
 /**
  * searchEngine.js
  * 
@@ -6,30 +9,33 @@
  */
 
 /**
- * @typedef {import('../types').Aircraft} Aircraft
- * @typedef {import('../types').SearchResult} SearchResult
- */
-
-/**
  * Searches the aircraft map for the given query.
  * 
  * @param {string} query 
- * @param {Map<string, Object>} aircraftMap 
- * @returns {Array<{aircraft: Object, matchedField: string, matchedValue: string, relevanceScore: number}>}
+ * @param {Map<string, Aircraft>} aircraftMap 
+ * @returns {SearchResult[]}
  */
 export function search(query, aircraftMap) {
     if (!query || query.trim().length < 2) return [];
     
     const q = query.trim().toUpperCase();
+    /** @type {SearchResult[]} */
     const results = [];
     
     for (const [, ac] of aircraftMap.entries()) {
         let score = 0;
+        /** @type {string|null} */
         let matchedField = null;
+        /** @type {string|null} */
         let matchedValue = null;
         
         // Weighting: callsign=4, icao24=3, registration=2, operator=1, aircraftType=1
         // Bonus for exact match vs partial match
+        /**
+         * @param {any} fieldValue 
+         * @param {string} fieldName 
+         * @param {number} weight 
+         */
         const checkField = (fieldValue, fieldName, weight) => {
             if (!fieldValue) return;
             const val = String(fieldValue).toUpperCase();
@@ -56,7 +62,7 @@ export function search(query, aircraftMap) {
         checkField(ac.icao24, 'icao24', 3);
         checkField(ac.callsign, 'callsign', 4);
         
-        if (score > 0) {
+        if (score > 0 && matchedField && matchedValue) {
             results.push({
                 aircraft: ac,
                 matchedField,

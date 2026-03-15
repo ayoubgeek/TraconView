@@ -54,9 +54,8 @@ export function useAnomalyEngine() {
 
     aircraftArray.forEach(aircraft => {
       const prevResult = riskScores.get(aircraft.id);
-      const prevScore = prevResult ? prevResult.score : 0;
       
-      const riskResult = computeRiskScore(aircraft, prevScore);
+      const riskResult = computeRiskScore(aircraft, prevResult);
       newRiskScores.set(aircraft.id, riskResult);
       storeChanged = true;
 

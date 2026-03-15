@@ -52,6 +52,33 @@ export const ANOMALY_SEVERITY = {
   LOW: 'LOW'
 };
 
+export const BUILT_IN_PRESETS = [
+  {
+    id: 'preset-military-watch',
+    name: 'Military Watch',
+    isReadOnly: true,
+    state: {
+      filters: { category: ['military'] }
+    }
+  },
+  {
+    id: 'preset-emergency-only',
+    name: 'Emergency Only',
+    isReadOnly: true,
+    state: {
+      filters: { squawkCodes: ['7700', '7600', '7500'] }
+    }
+  },
+  {
+    id: 'preset-low-altitude',
+    name: 'Low-Altitude Activity',
+    isReadOnly: true,
+    state: {
+      filters: { altitudeBand: { min: 0, max: 5000 } }
+    }
+  }
+];
+
 export const ANOMALY_TYPES = {
   SQUAWK_7700: 'SQUAWK_7700',
   SQUAWK_7500: 'SQUAWK_7500',
@@ -96,7 +123,22 @@ export const AIRCRAFT_CATEGORY_COLORS = {
 export const SNAPSHOT_POLL_INTERVAL_MS = 60000;
 export const SNAPSHOT_RETENTION_HOURS = 24;
 export const CLUSTER_DISABLE_AT_ZOOM = 9;
+export const CLUSTER_LARGE_RADIUS_MAX_ZOOM = 6;
 export const HEADING_QUANTIZE_STEP = 5;
 export const STALE_AIRCRAFT_TTL_MS = 60000;
 export const CALLSIGN_LABEL_MIN_ZOOM = 9;
 export const FILTER_DEBOUNCE_MS = 150;
+
+export const UI_INTERVALS = {
+  LIVE_CLOCK_MS: 1000,
+  STATS_CLOCK_MS: 1000,
+  EXPLANATION_TICK_MS: 60000,
+  COPIED_TIMEOUT_MS: 2000
+};
+
+export const RISK_SCORE_BOUNDS = {
+  CRITICAL: 76,
+  WARNING: 51,
+  CAUTION: 26,
+  WATCH: 11
+};

@@ -1,3 +1,12 @@
+// @ts-check
+/** @import { Aircraft } from '../types/index.js' */
+
+/**
+ * Formats aircraft data to CSV format
+ * @param {Aircraft} ac 
+ * @param {number} riskScore 
+ * @returns {string}
+ */
 export function formatAircraftCsv(ac, riskScore = 0) {
   const headers = [
     'Callsign',
@@ -28,6 +37,11 @@ export function formatAircraftCsv(ac, riskScore = 0) {
   return headers.join(',') + '\n' + valueRow.join(',');
 }
 
+/**
+ * Downloads a string content as a CSV file
+ * @param {string} filename 
+ * @param {string} content 
+ */
 export function downloadCsv(filename, content) {
   if (typeof window === 'undefined') return;
   const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });

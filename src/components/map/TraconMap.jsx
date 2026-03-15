@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { useFlightStore } from '../../store/flightStore';
 import AircraftLayer from './AircraftLayer';
+import AircraftTable from '../panels/AircraftTable';
 import AirspaceLayer from './AirspaceLayer';
 import { useMetar } from '../../hooks/useMetar';
 import { useAirspaceDetection } from '../../hooks/useAirspaceDetection';
@@ -10,9 +11,10 @@ import { usePositionHistory } from '../../hooks/usePositionHistory';
 import { useHoldingDetection } from '../../hooks/useHoldingDetection';
 import HoldingTrails from './HoldingTrails';
 import WeatherLayer from './WeatherLayer';
-import MapLegend from './MapLegend';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { ViewModeContext } from '../../context/ViewModeContext';
+import { useContext } from 'react';
 
 // Component to handle map panning when region changes
 function MapViewHandler() {
@@ -39,6 +41,7 @@ export default function TraconMap() {
   const selectedAircraftId = useFlightStore(state => state.selectedAircraftId);
   const aircraft = useFlightStore(state => state.aircraft);
   const clearSelectedAircraft = useFlightStore(state => state.clearSelectedAircraft);
+  const { viewMode } = useContext(ViewModeContext);
   const mapRef = useRef(null);
 
   // Start polling METAR data for the selected region
@@ -94,8 +97,15 @@ export default function TraconMap() {
         
         <WeatherLayer />
         <HoldingTrails />
-        <AircraftLayer />
-        <MapLegend />
+        
+        {viewMode === 'map' ? (
+          <>
+            <AircraftLayer />
+            <MapLegend />
+          </>
+        ) : (
+          <AircraftTable />
+        )}
         
         <MapViewHandler />
       </MapContainer>

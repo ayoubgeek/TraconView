@@ -1,3 +1,6 @@
+// @ts-check
+/** @import { Aircraft } from '../types/index.js' */
+
 import { isMilitaryByHex } from './militaryHexRanges';
 import { isMilitaryByCallsign } from './militaryCallsigns';
 
@@ -10,8 +13,8 @@ const CATEGORIES = [
  * Classifies an aircraft into one of 7 standard categories based on database info and heuristics.
  * Priority: Military -> Helicopter -> Business Jet -> GA -> Cargo -> Commercial -> Unknown
  *
- * @param {Object} aircraft The live aircraft object containing id, callsign, speed, altitude, etc.
- * @param {Object|null} dbInfo Optional database info about the aircraft (e.g., from registration db)
+ * @param {Aircraft} aircraft The live aircraft object containing id, callsign, speed, altitude, etc.
+ * @param {any|null} dbInfo Optional database info about the aircraft (e.g., from registration db)
  * @returns {{category: string, categoryConfidence: 'high'|'heuristic'}}
  */
 export function classifyAircraft(aircraft, dbInfo = null) {
@@ -21,7 +24,7 @@ export function classifyAircraft(aircraft, dbInfo = null) {
   }
 
   // 1. Military (highest priority heuristic)
-  if (isMilitaryByHex(aircraft.id) || isMilitaryByCallsign(aircraft.callsign)) {
+  if (isMilitaryByHex(aircraft.id) || isMilitaryByCallsign(aircraft.callsign || '')) {
     return { category: 'military', categoryConfidence: 'heuristic' };
   }
 
@@ -46,18 +49,18 @@ export function classifyAircraft(aircraft, dbInfo = null) {
 
   // 5. Cargo
   const cargoPrefixes = ['FDX', 'UPS', 'GTI', 'PAC', 'ABX', 'ATI'];
-  if (dbInfo?.isCargo || (aircraft.callsign && cargoPrefixes.some(p => aircraft.callsign.startsWith(p)))) {
+  if (dbInfo?.isCargo || (aircraft.callsign && cargoPrefixes.some(p => aircraft.callsign?.startsWith(p)))) {
     return { category: 'cargo', categoryConfidence: 'heuristic' };
   }
 
   // 6. Commercial
   const commercialPrefixes = ['DAL', 'UAL', 'AAL', 'AFR', 'BAW', 'SWA', 'RYR', 'EZS', 'JBU', 'NKS', 'ASA'];
-  if (dbInfo?.isCommercial || (aircraft.callsign && commercialPrefixes.some(p => aircraft.callsign.startsWith(p)))) {
+  if (dbInfo?.isCommercial || (aircraft.callsign && commercialPrefixes.some(p => aircraft.callsign?.startsWith(p)))) {
     return { category: 'commercial', categoryConfidence: 'heuristic' };
   }
   
   // Coarse heuristic for commercial: if speed is typical of airliners (>300kts) and high altitude (>20000)
-  if (aircraft.speed > 300 && aircraft.altitude > 20000) {
+  if ((aircraft.speed || 0) > 300 && (aircraft.altitude || 0) > 20000) {
     return { category: 'commercial', categoryConfidence: 'heuristic' };
   }
 

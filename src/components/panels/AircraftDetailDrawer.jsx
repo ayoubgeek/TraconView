@@ -6,6 +6,7 @@ import SituationReportModal from '../ui/SituationReportModal';
 import { generateSituationReport } from '../../lib/situationReport';
 import { downloadCsv, formatAircraftCsv } from '../../lib/exportUtils';
 import { formatAltitude, formatSpeed, formatHeading } from '../../lib/formatters';
+import { STALE_AIRCRAFT_TTL_MS } from '../../lib/constants';
 
 export default function AircraftDetailDrawer() {
   const selectedAircraftId = useFlightStore(state => state.selectedAircraftId);
@@ -17,12 +18,19 @@ export default function AircraftDetailDrawer() {
   const riskData = selectedAircraftId ? riskScores.get(selectedAircraftId) : null;
   const score = riskData ? riskData.score : 0;
   const threshold = riskData ? riskData.threshold : 'NORMAL';
-  const factors = riskData ? riskData.factors : [];
+  const explanation = riskData ? riskData.explanation : null;
   
   const pinnedAircraftIds = useFlightStore(state => state.pinnedAircraftIds);
   const isPinned = pinnedAircraftIds && pinnedAircraftIds.has(selectedAircraftId);
   
   const [sitRep, setSitRep] = useState(null);
+
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!aircraft) return;
+    const timer = setInterval(() => setNow(Date.now()), 10000);
+    return () => clearInterval(timer);
+  }, [aircraft]);
 
   // Close on Escape key
   useEffect(() => {
@@ -60,12 +68,18 @@ export default function AircraftDetailDrawer() {
     return 'text-atc-green bg-atc-green/10 border-atc-green/30';
   };
 
+  const isStale = (now / 1000) - aircraft.lastSeen > (STALE_AIRCRAFT_TTL_MS / 1000);
+  const timeSinceSeconds = Math.max(0, Math.floor((now / 1000) - aircraft.lastSeen));
+  const timeSinceMins = Math.floor(timeSinceSeconds / 60);
+  const lastSeenText = timeSinceMins < 1 ? 'Just now' : `${timeSinceMins} min ago`;
+
   return (
     <div className="flex flex-col h-full bg-[#0A0F1A] border-l border-[#1A2235] w-80 shadow-2xl overflow-y-auto custom-scrollbar font-ui relative">
       {/* Header */}
       <div className="flex justify-between items-center p-4 border-b border-[#1A2235] bg-[#0A0F1A] sticky top-0 z-10 w-full">
-        <h2 className="text-xl font-bold tracking-wider text-slate-100 font-data">
-          {aircraft.callsign || aircraft.id}
+        <h2 className="text-xl font-bold tracking-wider text-slate-100 font-data flex flex-col">
+          <span>{aircraft.callsign || aircraft.id}</span>
+          {isStale && <span className="text-[10px] text-slate-400 font-ui font-normal tracking-normal border border-slate-700/50 bg-[#1A2235]/50 px-1.5 py-0.5 mt-1 rounded inline-block w-max">Last seen: {lastSeenText}</span>}
         </h2>
         <button onClick={clearSelection} className="text-slate-400 hover:text-white transition-colors p-1 rounded hover:bg-[#1A2235]">
           <X className="w-5 h-5" />
@@ -162,8 +176,8 @@ export default function AircraftDetailDrawer() {
         </section>
 
         {/* Why Flagged */}
-        {score > 0 && factors.length > 0 && (
-          <AnomalyExplanation factors={factors} />
+        {score > 0 && explanation && explanation.factors && explanation.factors.length > 0 && (
+          <AnomalyExplanation explanation={explanation} threshold={threshold} />
         )}
       </div>
 

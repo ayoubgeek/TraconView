@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { UI_INTERVALS } from '../../lib/constants';
 
 // Isolated component that ticks every second and formats the elapsed time,
 // preventing its parent from re-rendering every second.
@@ -7,7 +8,7 @@ export default function LiveClock({ lastRefresh, label = 'REF', className = '' }
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1000);
+    const timer = setInterval(() => setNow(Date.now()), UI_INTERVALS.LIVE_CLOCK_MS);
     return () => clearInterval(timer);
   }, []);
 

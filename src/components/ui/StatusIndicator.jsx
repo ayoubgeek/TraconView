@@ -1,7 +1,27 @@
 // src/components/ui/StatusIndicator.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useFlightStore } from '../../store/flightStore';
 import LiveClock from './LiveClock';
+import { UI_INTERVALS } from '../../lib/constants';
+
+function DegradedBadgeText({ lastRefresh, status }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (status !== 'DEGRADED' || !lastRefresh) return;
+    const timer = setInterval(() => setNow(Date.now()), UI_INTERVALS.LIVE_CLOCK_MS);
+    return () => clearInterval(timer);
+  }, [status, lastRefresh]);
+
+  if (status !== 'DEGRADED' || !lastRefresh) {
+    return status;
+  }
+  
+  const minAgo = Math.floor((Math.max(0, now - lastRefresh)) / 60000);
+  const timeText = minAgo < 1 ? '<1 min ago' : `${minAgo} min ago`;
+  
+  return `DEGRADED [${timeText}]`;
+}
+
 export default function StatusIndicator() {
   const connectionStatus = useFlightStore(state => state.connectionStatus);
   const lastRefresh = useFlightStore(state => state.lastRefresh);
@@ -24,7 +44,9 @@ export default function StatusIndicator() {
     <div className="flex items-center gap-2 font-data text-xs">
       <div className="flex items-center gap-1">
         <div className={`w-2 h-2 rounded-full ${statusColor} ${pulse}`} />
-        <span className={textColor}>{connectionStatus}</span>
+        <span className={textColor}>
+          <DegradedBadgeText status={connectionStatus} lastRefresh={lastRefresh} />
+        </span>
       </div>
       {lastRefresh && (
         <span className="text-atc-dim">

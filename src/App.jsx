@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import AppLayout from './components/layout/AppLayout';
 import TraconMap from './components/map/TraconMap';
+import ErrorBoundary from './components/ui/ErrorBoundary';
 
 const StatsPanel = lazy(() => import('./components/panels/StatsPanel'));
 const SavedViewPanel = lazy(() => import('./components/panels/SavedViewPanel'));
@@ -27,9 +28,11 @@ function App() {
           </Suspense>
           {/* StatsPanel is pinned to the bottom of the sidebar */}
           <div className="mt-auto border-t border-slate-800 bg-[#0A0F1A]">
-            <Suspense fallback={<PanelSkeleton />}>
-               <StatsPanel />
-            </Suspense>
+            <ErrorBoundary fallback={<div className="p-4 text-atc-dim">Stats unavailable</div>}>
+              <Suspense fallback={<PanelSkeleton />}>
+                 <StatsPanel />
+              </Suspense>
+            </ErrorBoundary>
           </div>
         </div>
       }

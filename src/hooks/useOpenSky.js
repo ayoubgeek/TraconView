@@ -12,6 +12,7 @@ export function useOpenSky() {
     selectedRegion,
     setAircraftData,
     setConnectionStatus,
+    removeStaleAircraft,
     aircraftArray
   } = useFlightStore();
 
@@ -86,6 +87,7 @@ export function useOpenSky() {
       );
 
       setAircraftData(freshAircraft, Date.now());
+      removeStaleAircraft(2 * STALE_AIRCRAFT_MS);
 
       consecutiveErrors.current = 0;
       setConnectionStatus('LIVE');

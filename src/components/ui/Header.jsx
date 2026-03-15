@@ -8,9 +8,12 @@ import ExportButton from './ExportButton';
 import SearchBar from './SearchBar';
 import FilterChips from './FilterChips';
 import AdvancedFilterDrawer from '../panels/AdvancedFilterDrawer';
-import { Volume2, VolumeX, Radar, Bell, Camera } from 'lucide-react';
+import { Volume2, VolumeX, Radar, Bell, Camera, Map as MapIcon, List } from 'lucide-react';
+import { ViewModeContext } from '../../context/ViewModeContext';
+import { useContext } from 'react';
 
 export default function Header() {
+  const { viewMode, setViewMode } = useContext(ViewModeContext);
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
   const aircraftArray = useFlightStore(state => state.aircraftArray);
   const isMuted = useFlightStore(state => state.isMuted);
@@ -56,6 +59,23 @@ export default function Header() {
         <div className="bg-radar-bg/80 backdrop-blur-md border border-radar-grid rounded px-4 py-2 hidden sm:flex flex-col items-center justify-center shadow min-w-[100px]">
           <span className="text-[10px] text-atc-dim uppercase tracking-wider">Tracking</span>
           <span className="text-lg font-data font-bold text-atc-text">{aircraftArray.length}</span>
+        </div>
+
+        <div className="flex bg-radar-bg/80 backdrop-blur-md rounded border border-radar-grid p-1 shadow">
+          <button 
+            onClick={() => setViewMode('map')}
+            className={`p-2 rounded transition-colors ${viewMode === 'map' ? 'bg-atc-green/20 text-atc-green' : 'text-slate-400 hover:text-slate-200 hover:bg-[#1A2235]'}`}
+            title="Map View"
+          >
+            <MapIcon className="w-5 h-5" />
+          </button>
+          <button 
+            onClick={() => setViewMode('list')}
+            className={`p-2 rounded transition-colors ${viewMode === 'list' ? 'bg-atc-green/20 text-atc-green' : 'text-slate-400 hover:text-slate-200 hover:bg-[#1A2235]'}`}
+            title="List View"
+          >
+            <List className="w-5 h-5" />
+          </button>
         </div>
 
         <ExportButton />

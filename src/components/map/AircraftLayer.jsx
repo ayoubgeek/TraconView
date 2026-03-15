@@ -4,7 +4,7 @@ import L from 'leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { useFlightStore } from '../../store/flightStore';
 import { pointInPolygon, computeBBox } from '../../lib/pointInPolygon';
-import { CLUSTER_DISABLE_AT_ZOOM, STALE_AIRCRAFT_TTL_MS, CALLSIGN_LABEL_MIN_ZOOM, ANOMALY_SEVERITY } from '../../lib/constants';
+import { CLUSTER_DISABLE_AT_ZOOM, STALE_AIRCRAFT_TTL_MS, CALLSIGN_LABEL_MIN_ZOOM, ANOMALY_SEVERITY, CLUSTER_LARGE_RADIUS_MAX_ZOOM } from '../../lib/constants';
 import { getCategorizedIcon } from '../../lib/iconUtils';
 import { updateMarkersImperatively } from '../../lib/aircraftDiff';
 
@@ -197,9 +197,9 @@ export default function AircraftLayer() {
       
       <MarkerClusterGroup
         ref={clusterGroupRef}
-        chunkedLoading
+        chunkedLoading={true}
         disableClusteringAtZoom={CLUSTER_DISABLE_AT_ZOOM}
-        maxClusterRadius={(zoom) => zoom < 6 ? 80 : 40}
+        maxClusterRadius={(zoom) => zoom < CLUSTER_LARGE_RADIUS_MAX_ZOOM ? 80 : 40}
         spiderfyOnMaxZoom={true}
         iconCreateFunction={createClusterCustomIcon}
       >
