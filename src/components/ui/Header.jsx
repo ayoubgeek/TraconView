@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { useFlightStore } from '../../store/flightStore';
 import StatusIndicator from './StatusIndicator';
 import RegionSelector from '../panels/RegionSelector';
-import AirspaceToggle from './AirspaceToggle';
 import ExportButton from './ExportButton';
 import SearchBar from './SearchBar';
 import FilterChips from './FilterChips';
@@ -111,8 +110,6 @@ export default function Header({ panelMode, onSetPanelMode }) {
         >
           <Camera className="w-5 h-5 flex-shrink-0" />
         </button>
-
-        <AirspaceToggle />
 
         <button 
           onClick={toggleMute}

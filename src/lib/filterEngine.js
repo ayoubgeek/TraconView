@@ -38,18 +38,18 @@ export function applyFilters(aircraftMap, filters, pinnedIds = new Set()) {
     
     // Altitude
     if (filters.altitudeMin !== undefined && filters.altitudeMin !== null) {
-      if ((ac.altitude || 0) < filters.altitudeMin) continue;
+      if (ac.altitude != null && ac.altitude < filters.altitudeMin) continue;
     }
     if (filters.altitudeMax !== undefined && filters.altitudeMax !== null) {
-      if ((ac.altitude || 0) > filters.altitudeMax) continue;
+      if (ac.altitude != null && ac.altitude > filters.altitudeMax) continue;
     }
 
     // Speed
     if (filters.speedMin !== undefined && filters.speedMin !== null) {
-      if ((ac.speed || 0) < filters.speedMin) continue;
+      if (ac.speed != null && ac.speed < filters.speedMin) continue;
     }
     if (filters.speedMax !== undefined && filters.speedMax !== null) {
-      if ((ac.speed || 0) > filters.speedMax) continue;
+      if (ac.speed != null && ac.speed > filters.speedMax) continue;
     }
 
     // Ground Exclude

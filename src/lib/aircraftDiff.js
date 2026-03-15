@@ -4,10 +4,6 @@ export function updateMarkersImperatively(markerMap, newAircraftArray, clusterGr
     const { 
         selectedAircraftId = null, 
         onClick = null,
-        casablancaFirFocus = false,
-        firFeature = null,
-        firBbox = null,
-        pointInPolygon = () => false,
         STALE_AIRCRAFT_TTL_MS = 60000,
         riskScores = new Map(),
         anomalyIcons = null
@@ -35,16 +31,8 @@ export function updateMarkersImperatively(markerMap, newAircraftArray, clusterGr
              isStale = (now - Math.floor(ac.lastSeen * 1000)) > STALE_AIRCRAFT_TTL_MS;
         }
 
-        let isDimmed = false;
-        if (casablancaFirFocus && firFeature && firBbox && !isSelected) {
-             const inside = pointInPolygon(ac.lng, ac.lat, firFeature.geometry, firBbox);
-             if (!inside) {
-               isDimmed = true;
-             }
-        }
-        
-        const computeIsStale = isStale || isDimmed;
-        const showAnomaly = isCriticalOrWarning && !isSelected && !isDimmed && anomalyIcons;
+        const computeIsStale = isStale;
+        const showAnomaly = isCriticalOrWarning && !isSelected && anomalyIcons;
         
         let markerRecord = markerMap.get(ac.id);
         

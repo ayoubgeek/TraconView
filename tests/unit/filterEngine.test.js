@@ -66,4 +66,21 @@ describe('filterEngine', () => {
     expect(res2.size).toBe(1);
     expect(res2.has('4')).toBe(true);
   });
+
+  it('handles 0 and null values correctly for numeric filters', () => {
+    const testMap = new Map([
+      ['a', { id: 'a', speed: 0, altitude: 0 }],
+      ['b', { id: 'b', speed: null, altitude: null }],
+      ['c', { id: 'c', speed: 100, altitude: 5000 }]
+    ]);
+
+    // 1. Min speed = 0 should include speed = 0 but not null (wait, if speed is null it skips the filter, but speed 0 is >= 0)
+    // Actually our logic says: `if (speed != null && speed < min) continue;` 
+    // So 'a' (0 < 10?) yes -> filtered. 'b' (null!=null?) no -> not filtered. 'c' (100 < 10) no -> not filtered.
+    const f1 = { speedMin: 10 };
+    const r1 = applyFilters(testMap, f1, new Set());
+    expect(r1.has('a')).toBe(false); // 0 < 10 -> excluded
+    expect(r1.has('b')).toBe(true);  // null -> included (bypasses filter)
+    expect(r1.has('c')).toBe(true);  // 100 >= 10 -> included
+  });
 });

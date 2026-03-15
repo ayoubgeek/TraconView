@@ -30,15 +30,17 @@ export function getCategorizedIcon(category, heading, isSelected, isStale = fals
   }
 
   const opacity = isStale ? 0.5 : 1.0;
-  const stroke = isSelected ? '#22d3ee' : '#000000';
-  const strokeWidth = isSelected ? 2 : 1;
+  // Professional aviation marker aesthetic
+  const stroke = isSelected ? '#ffffff' : 'rgba(10, 15, 26, 0.8)';
+  const strokeWidth = isSelected ? 1.5 : 1;
+  const filter = isSelected ? `drop-shadow(0px 0px 6px ${color})` : 'drop-shadow(0px 2px 4px rgba(0,0,0,0.5))';
 
   const svg = `
-    <div style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; opacity: ${opacity}; will-change: transform; contain: layout style paint;">
+    <div style="width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; opacity: ${opacity}; will-change: transform; contain: layout style paint;">
       <div style="transform: rotate(${qHeading}deg); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
-          <path fill="${color}" stroke="${stroke}" stroke-width="${strokeWidth}"
-            d="M12,2 L14,7 L20,11 L20,13 L14,12 L14,18 L17,20 L17,22 L12,21 L7,22 L7,20 L10,18 L10,12 L4,13 L4,11 L10,7 L12,2 Z" />
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" style="filter: ${filter};">
+          <path fill="${color}" stroke="${stroke}" stroke-width="${strokeWidth}" stroke-linejoin="round"
+            d="M 14.5 11 L 21 15 L 21 16 L 14 14 L 13 19 L 15 21 L 15 22 L 12 21 L 9 22 L 9 21 L 11 19 L 10 14 L 3 16 L 3 15 L 9.5 11 L 9.5 5 C 9.5 3 10.5 2 12 2 C 13.5 2 14.5 3 14.5 5 Z" />
         </svg>
       </div>
     </div>
@@ -47,9 +49,9 @@ export function getCategorizedIcon(category, heading, isSelected, isStale = fals
   const icon = L.divIcon({
     html: svg,
     className: 'custom-aircraft-icon border-none bg-transparent',
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
-    tooltipAnchor: [0, -12]
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    tooltipAnchor: [0, -14]
   });
 
   iconCache.set(cacheKey, icon);

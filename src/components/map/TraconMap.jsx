@@ -4,9 +4,7 @@ import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { useFlightStore } from '../../store/flightStore';
 import AircraftLayer from './AircraftLayer';
 import AircraftTable from '../panels/AircraftTable';
-import AirspaceLayer from './AirspaceLayer';
 import { useMetar } from '../../hooks/useMetar';
-import { useAirspaceDetection } from '../../hooks/useAirspaceDetection';
 import { usePositionHistory } from '../../hooks/usePositionHistory';
 import { useHoldingDetection } from '../../hooks/useHoldingDetection';
 import HoldingTrails from './HoldingTrails';
@@ -47,9 +45,6 @@ export default function TraconMap() {
 
   // Start polling METAR data for the selected region
   useMetar();
-  
-  // Start tracking airspace incursions
-  useAirspaceDetection();
   
   // Track holding patterns
   usePositionHistory();
@@ -93,8 +88,6 @@ export default function TraconMap() {
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           maxZoom={19}
         />
-        
-        <AirspaceLayer />
         
         <WeatherLayer />
         <HoldingTrails />

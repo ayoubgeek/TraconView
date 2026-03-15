@@ -3,7 +3,6 @@ import { Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { useFlightStore } from '../../store/flightStore';
-import { pointInPolygon, computeBBox } from '../../lib/pointInPolygon';
 import { CLUSTER_DISABLE_AT_ZOOM, STALE_AIRCRAFT_TTL_MS, CALLSIGN_LABEL_MIN_ZOOM, ANOMALY_SEVERITY, CLUSTER_LARGE_RADIUS_MAX_ZOOM } from '../../lib/constants';
 import { getCategorizedIcon } from '../../lib/iconUtils';
 import { updateMarkersImperatively } from '../../lib/aircraftDiff';
@@ -158,12 +157,6 @@ export default function AircraftLayer() {
   const selectedAircraftId = useFlightStore(state => state.selectedAircraftId);
   const setSelectedAircraft = useFlightStore(state => state.setSelectedAircraft);
   const riskScores = useFlightStore(state => state.riskScores);
-  
-  const casablancaFirFocus = useFlightStore(state => state.casablancaFirFocus);
-  const airspaceZones = useFlightStore(state => state.airspaceZones);
-
-  const firFeature = useMemo(() => airspaceZones.find(z => z.properties?.name?.includes('Casablanca FIR') || z.properties?.type === 'FIR'), [airspaceZones]);
-  const firBbox = useMemo(() => firFeature?.geometry?.coordinates?.[0] ? computeBBox(firFeature.geometry.coordinates[0]) : null, [firFeature]);
 
   const validAircraft = useMemo(() => {
     return filteredAircraft.filter(ac => ac.lat !== null && ac.lng !== null);
@@ -179,16 +172,12 @@ export default function AircraftLayer() {
     updateMarkersImperatively(markerMapRef.current, validAircraft, clusterGroupRef.current, getCategorizedIcon, {
       selectedAircraftId,
       onClick: setSelectedAircraft,
-      casablancaFirFocus,
-      firFeature,
-      firBbox,
-      pointInPolygon,
       STALE_AIRCRAFT_TTL_MS,
       riskScores,
       anomalyIcons: ANOMALY_ICONS
     });
 
-  }, [validAircraft, selectedAircraftId, casablancaFirFocus, firFeature, firBbox, riskScores, setSelectedAircraft]);
+  }, [validAircraft, selectedAircraftId, riskScores, setSelectedAircraft]);
 
   return (
     <>

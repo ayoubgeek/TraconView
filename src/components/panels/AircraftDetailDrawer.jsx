@@ -24,6 +24,31 @@ export default function AircraftDetailDrawer() {
   const isPinned = pinnedAircraftIds && pinnedAircraftIds.has(selectedAircraftId);
   
   const [sitRep, setSitRep] = useState(null);
+  const [photo, setPhoto] = useState(null);
+  const [photoError, setPhotoError] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    setPhoto(null);
+    setPhotoError(false);
+    if (!selectedAircraftId) return;
+
+    fetch(`https://api.planespotters.net/pub/photos/hex/${selectedAircraftId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (isMounted && data && data.photos && data.photos.length > 0) {
+          setPhoto(data.photos[0]);
+        } else if (isMounted) {
+          setPhotoError(true);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch photo", err);
+        if (isMounted) setPhotoError(true);
+      });
+
+    return () => { isMounted = false; };
+  }, [selectedAircraftId]);
 
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
@@ -84,6 +109,26 @@ export default function AircraftDetailDrawer() {
         <button onClick={clearSelection} className="text-slate-400 hover:text-white transition-colors p-1 rounded hover:bg-[#1A2235]">
           <X className="w-5 h-5" />
         </button>
+      </div>
+
+      {/* Photo Section */}
+      <div className="relative w-full h-48 bg-[#1A2235] flex-shrink-0 border-b border-white/10 overflow-hidden">
+        {photo && photo.thumbnail_large ? (
+          <img src={photo.thumbnail_large.src} alt="Aircraft" className="w-full h-full object-cover" />
+        ) : photoError ? (
+          <div className="w-full h-full flex items-center justify-center text-slate-500 font-data text-xs uppercase tracking-widest bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0yMSAxNXY0YTIgMiAw 0IDEgMS0yIDJINWExLjkgMS45IDAgMCAxLTItMiAxIDEgMCAwIDEgMC0yIi8+PHBhdGggZD0iTTIxIDE1LjJ2LTMuMmEyIDIgMCAwIDAtMi0yaC01LjVsLTMgMyIvPjxwYXRoIGQ9Ik0zIDExdi0xYTIgMiAwIDAgMSAyLTJoNWwtMyAzIi8+PHBhdGggZD0iTTEwIDEwaC4wMSIvPjwvc3ZnPg==')] bg-center bg-no-repeat opacity-50">
+            <span className="mt-8 bg-[#0A0F1A]/80 px-2 py-1 rounded">No Photo Available</span>
+          </div>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-slate-500 font-data text-xs uppercase tracking-widest animate-pulse">
+            Loading...
+          </div>
+        )}
+        {photo && photo.photographer && (
+          <a href={photo.link} target="_blank" rel="noreferrer" className="absolute bottom-1 right-1 text-[8px] bg-black/60 text-slate-300 px-1 rounded hover:text-white transition-colors">
+            © {photo.photographer}
+          </a>
+        )}
       </div>
 
       <div className="p-4 space-y-6 flex-1 h-full pb-10">
