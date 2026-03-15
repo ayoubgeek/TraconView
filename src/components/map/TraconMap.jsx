@@ -11,6 +11,7 @@ import { usePositionHistory } from '../../hooks/usePositionHistory';
 import { useHoldingDetection } from '../../hooks/useHoldingDetection';
 import HoldingTrails from './HoldingTrails';
 import WeatherLayer from './WeatherLayer';
+import MapLegend from './MapLegend';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { ViewModeContext } from '../../context/ViewModeContext';
