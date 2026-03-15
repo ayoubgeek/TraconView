@@ -7,18 +7,20 @@ import AirspaceToggle from './AirspaceToggle';
 import ExportButton from './ExportButton';
 import SearchBar from './SearchBar';
 import FilterChips from './FilterChips';
+import FilterPopover from './FilterPopover';
 import AdvancedFilterDrawer from '../panels/AdvancedFilterDrawer';
-import { Volume2, VolumeX, Radar, Bell, Camera, Map as MapIcon, List } from 'lucide-react';
+import { Volume2, VolumeX, Radar, Bell, Camera, Map as MapIcon, List, BarChart2, Menu } from 'lucide-react';
 import { ViewModeContext } from '../../context/ViewModeContext';
 import { useContext } from 'react';
 
-export default function Header() {
+export default function Header({ panelMode, onSetPanelMode }) {
   const { viewMode, setViewMode } = useContext(ViewModeContext);
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const aircraftArray = useFlightStore(state => state.aircraftArray);
+  const activeCategoriesCount = useFlightStore(state => state.filters?.categories?.length || 0);
   const isMuted = useFlightStore(state => state.isMuted);
   const toggleMute = useFlightStore(state => state.toggleMute);
-  const toggleSidebar = useFlightStore(state => state.toggleSidebar);
   const toggleScreenshotMode = useFlightStore(state => state.toggleScreenshotMode);
 
   return (
@@ -29,6 +31,13 @@ export default function Header() {
       <div className="flex flex-col gap-2 pointer-events-auto">
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
+            <button 
+              aria-label="Toggle Navigation"
+              onClick={() => onSetPanelMode && onSetPanelMode(panelMode === 'navigation' ? null : 'navigation')}
+              className={`p-1.5 rounded transition-colors ${panelMode === 'navigation' ? 'bg-atc-green/20 text-atc-green' : 'text-slate-400 hover:text-white hover:bg-[#1A2235]'}`}
+            >
+              <Menu className="w-5 h-5" />
+            </button>
             <Radar className="w-6 h-6 text-atc-green" />
             <h1 className="text-xl font-bold text-white tracking-widest font-ui">
               TRACON<span className="text-atc-green">VIEW</span>
@@ -40,18 +49,22 @@ export default function Header() {
         <div className="bg-radar-bg/80 backdrop-blur-md border border-radar-grid rounded px-3 py-1.5 flex items-center shadow w-fit">
           <StatusIndicator />
         </div>
-        
-        <div className="mt-1 max-w-full sm:max-w-xl">
+      </div>
+
+      {/* Center: Search and Filters */}
+      <div className="absolute left-1/2 top-0 -translate-x-1/2 pointer-events-auto mt-2 flex items-start gap-2">
+        <SearchBar />
+        <FilterPopover 
+           isOpen={isFilterOpen} 
+           onToggle={() => setIsFilterOpen(!isFilterOpen)} 
+           onClose={() => setIsFilterOpen(false)} 
+           activeCount={activeCategoriesCount}
+        >
           <FilterChips 
             onToggleAdvanced={() => setIsAdvancedOpen(!isAdvancedOpen)} 
             isAdvancedOpen={isAdvancedOpen} 
           />
-        </div>
-      </div>
-
-      {/* Center: Search */}
-      <div className="absolute left-1/2 top-0 -translate-x-1/2 pointer-events-auto mt-2">
-        <SearchBar />
+        </FilterPopover>
       </div>
 
       {/* Right side: Global Stats and Controls */}
@@ -76,6 +89,17 @@ export default function Header() {
           >
             <List className="w-5 h-5" />
           </button>
+          
+          <div className="w-px bg-slate-700 mx-1 my-1"></div>
+          
+          <button 
+            aria-label="Toggle Analytics"
+            onClick={() => onSetPanelMode && onSetPanelMode(panelMode === 'analytics' ? null : 'analytics')}
+            className={`p-2 rounded transition-colors ${panelMode === 'analytics' ? 'bg-atc-green/20 text-atc-green' : 'text-slate-400 hover:text-slate-200 hover:bg-[#1A2235]'}`}
+            title="Toggle Analytics"
+          >
+            <BarChart2 className="w-5 h-5" />
+          </button>
         </div>
 
         <ExportButton />
@@ -96,14 +120,6 @@ export default function Header() {
           title={isMuted ? "Unmute alerts" : "Mute alerts"}
         >
           {isMuted ? <VolumeX className="w-5 h-5 text-red-400" /> : <Volume2 className="w-5 h-5" />}
-        </button>
-
-        <button 
-          onClick={toggleSidebar}
-          className="md:hidden bg-radar-bg/80 backdrop-blur-md border border-radar-grid rounded w-12 flex items-center justify-center shadow hover:bg-radar-grid transition-colors text-atc-dim hover:text-white"
-          title="Toggle Alerts"
-        >
-          <Bell className="w-5 h-5" />
         </button>
       </div>
 

@@ -141,7 +141,7 @@ export default function StatsPanel() {
       const percent = totalCount > 0 ? Math.round((val / totalCount) * 100) : 0;
 
       return (
-        <div className="bg-[#0B101E]/95 backdrop-blur border border-[#1A2235] p-2 text-xs text-gray-200 shadow-md">
+        <div className="bg-[#0B101E]/95 backdrop-blur border border-white/10 p-2 text-xs text-gray-200 shadow-md">
           <p className="font-bold mb-1 text-atc-green">{label || data.name}</p>
           <div className="flex justify-between gap-4">
              <span className="text-slate-400">Count:</span>
@@ -169,7 +169,7 @@ export default function StatsPanel() {
 
   return (
     <div className="flex flex-col h-full font-ui bg-[#0A0F1A]">
-      <div className="px-4 py-3 bg-[#050A15]/50 border-b border-[#1A2235] flex items-center justify-between sticky top-0 z-10">
+      <div className="px-4 py-3 bg-[#050A15]/50 border-b border-white/10 flex items-center justify-between sticky top-0 z-10">
         <div className="flex items-center gap-2 text-atc-green font-bold text-sm">
            <Activity className="w-4 h-4" /> DASHBOARD
         </div>
@@ -182,7 +182,7 @@ export default function StatsPanel() {
         
         {/* KPI Cards (2x2) */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-[#121a2f] border border-[#1A2235] rounded p-3 flex flex-col hover:border-atc-dim transition-colors relative overflow-hidden">
+          <div className="bg-[#121a2f] border border-white/10 rounded p-3 flex flex-col hover:border-atc-dim transition-colors relative overflow-hidden">
             <div className="absolute top-0 right-0 p-2 opacity-10"><Plane className="w-8 h-8" /></div>
             <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1 relative z-10">Total Tracked</span>
             <div className="flex items-baseline justify-between transition-all relative z-10">
@@ -194,7 +194,7 @@ export default function StatsPanel() {
             </div>
           </div>
 
-          <div className="bg-[#121a2f] border border-[#1A2235] rounded p-3 flex flex-col hover:border-atc-dim transition-colors relative overflow-hidden">
+          <div className="bg-[#121a2f] border border-white/10 rounded p-3 flex flex-col hover:border-atc-dim transition-colors relative overflow-hidden">
             <div className="absolute top-0 right-0 p-2 opacity-10"><Wind className="w-8 h-8" /></div>
             <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1 relative z-10">In Flight</span>
             <div className="flex items-baseline justify-between transition-all relative z-10">
@@ -206,7 +206,7 @@ export default function StatsPanel() {
             </div>
           </div>
           
-          <div className="bg-[#121a2f] border border-[#1A2235] rounded p-3 flex flex-col hover:border-atc-dim transition-colors relative overflow-hidden">
+          <div className="bg-[#121a2f] border border-white/10 rounded p-3 flex flex-col hover:border-atc-dim transition-colors relative overflow-hidden">
             <div className="absolute top-0 right-0 p-2 opacity-10 text-orange-400"><AlertTriangle className="w-8 h-8"/></div>
             <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1 relative z-10">Active Risks</span>
             <div className="flex items-baseline justify-between transition-all relative z-10">
@@ -218,7 +218,7 @@ export default function StatsPanel() {
             </div>
           </div>
 
-          <div className="bg-[#121a2f] border border-[#1A2235] rounded p-3 flex flex-col hover:border-atc-dim transition-colors relative overflow-hidden">
+          <div className="bg-[#121a2f] border border-white/10 rounded p-3 flex flex-col hover:border-atc-dim transition-colors relative overflow-hidden">
             <div className="absolute top-0 right-0 p-2 opacity-10 text-atc-green"><ShieldCheck className="w-8 h-8"/></div>
             <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1 relative z-10">Sys Coverage</span>
             <div className="flex items-baseline justify-between transition-all relative z-10">
@@ -236,7 +236,7 @@ export default function StatsPanel() {
         </div>
 
         {/* Altitude Horizontal BarChart */}
-        <div className="bg-[#121a2f] border border-[#1A2235] rounded p-3">
+        <div className="bg-[#121a2f] border border-white/10 rounded p-3">
           <span className="text-xs text-slate-300 font-bold tracking-wide mb-3 block">Altitude Distribution</span>
           <div className="h-40 w-full transition-all">
             <ResponsiveContainer width="100%" height="100%">
@@ -251,7 +251,7 @@ export default function StatsPanel() {
         </div>
 
         {/* Region Breakdown Donut */}
-        <div className="bg-[#121a2f] border border-[#1A2235] rounded p-3">
+        <div className="bg-[#121a2f] border border-white/10 rounded p-3">
           <span className="text-xs text-slate-300 font-bold tracking-wide mb-3 block">Top Registrations</span>
           <div className="h-40 w-full flex items-center justify-center transition-all">
             <ResponsiveContainer width="100%" height="100%">
@@ -286,7 +286,7 @@ export default function StatsPanel() {
         </div>
 
         {/* Anomaly Timeline Sparkline */}
-        <div className="bg-[#121a2f] border border-[#1A2235] rounded p-3">
+        <div className="bg-[#121a2f] border border-white/10 rounded p-3">
           <span className="text-xs text-slate-300 font-bold tracking-wide mb-3 block">Anomaly Activity (2 Hrs)</span>
           <div className="h-24 w-full relative transition-all -ml-2">
             <ResponsiveContainer width="100%" height="100%">
@@ -301,7 +301,7 @@ export default function StatsPanel() {
                 <YAxis hide />
                 <Tooltip 
                   content={({active, payload, label}) => active && payload ? (
-                    <div className="bg-[#0B101E]/95 backdrop-blur border border-[#1A2235] p-2 text-xs text-gray-200 shadow-md">
+                    <div className="bg-[#0B101E]/95 backdrop-blur border border-white/10 p-2 text-xs text-gray-200 shadow-md">
                       <p className="font-bold mb-1 text-atc-green">{label}</p>
                       <div className="flex justify-between gap-4">
                          <span className="text-slate-400">Anomalies:</span>

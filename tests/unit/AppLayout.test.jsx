@@ -1,9 +1,11 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { render, screen, act, cleanup } from '@testing-library/react';
 import AppLayout from '../../src/components/layout/AppLayout';
 import { useFlightStore } from '../../src/store/flightStore';
 import React from 'react';
+
+afterEach(cleanup);
 
 // Mock flightStore to avoid full Zustand initialization in component
 vi.mock('../../src/store/flightStore', () => ({
@@ -16,30 +18,6 @@ vi.mock('../../src/components/ui/Header', () => ({
 }));
 
 describe('AppLayout', () => {
-    it('sidebar collapse state toggles correctly', () => {
-        // Return null for selectedAircraftId to prevent drawer opening
-        useFlightStore.mockReturnValue(null);
-
-        render(<AppLayout>
-            <div data-testid="main-content">Map</div>
-        </AppLayout>);
-        
-        // Find hamburger toggle button by aria-label
-        const toggleBtn = screen.getAllByRole('button', { name: /toggle sidebar/i })[0];
-        
-        // Initial state should be open based on specs (or test logic)
-        const sidebar = screen.getByTestId('left-sidebar');
-        expect(sidebar.className).not.toContain('-translate-x-full'); // Assuming standard Tailwind class for hiding
-        
-        // Toggle once to close
-        fireEvent.click(toggleBtn);
-        expect(sidebar.className).toContain('-translate-x-full'); // Or appropriate closed state class
-        
-        // Toggle again to open
-        fireEvent.click(toggleBtn);
-        expect(sidebar.className).not.toContain('-translate-x-full');
-    });
-
     it('right drawer evaluates selectedAircraftId visibility', () => {
         const { rerender } = render(<AppLayout>
             <div data-testid="main-content">Map</div>
@@ -59,4 +37,62 @@ describe('AppLayout', () => {
         const drawerActive = drawers[drawers.length - 1];
         expect(drawerActive.className).not.toContain('translate-x-full');
     });
+
+    it('leftPanelMode logic renders the appropriate panels', () => {
+        useFlightStore.mockReturnValue(null);
+        let externalSetMode = null;
+
+        const MockHeader = (props) => {
+            React.useEffect(() => {
+                externalSetMode = props.onSetPanelMode;
+            }, [props.onSetPanelMode]);
+            return <div data-testid="header">Header</div>;
+        };
+
+        render(
+            <AppLayout 
+                header={<MockHeader />} 
+                sidebar={<div data-testid="nav-content">Nav</div>} 
+                analyticsPanel={<div data-testid="analytics-content">Analytics</div>}
+            >
+                <div data-testid="main-content">Map</div>
+            </AppLayout>
+        );
+
+        // 1. Initial state (leftPanelMode = null)
+        const leftPanelInitial = screen.queryByTestId('left-panel');
+        if (leftPanelInitial) {
+            expect(leftPanelInitial.className).toContain('-translate-x-full');
+        } else {
+            expect(leftPanelInitial).toBeNull();
+        }
+
+        // 2. leftPanelMode = 'analytics'
+        act(() => {
+            externalSetMode('analytics');
+        });
+        const leftPanelAnalytics = screen.getByTestId('left-panel');
+        expect(leftPanelAnalytics.className).not.toContain('-translate-x-full');
+        expect(screen.getByTestId('analytics-content')).toBeTruthy();
+        expect(screen.queryByTestId('nav-content')).toBeNull();
+
+        // 3. leftPanelMode = 'navigation'
+        act(() => {
+            externalSetMode('navigation');
+        });
+        const leftPanelNavigation = screen.getByTestId('left-panel');
+        expect(leftPanelNavigation.className).not.toContain('-translate-x-full');
+        expect(screen.getByTestId('nav-content')).toBeTruthy();
+        expect(screen.queryByTestId('analytics-content')).toBeNull();
+
+        // 4. toggling back to null -> panel disappears
+        act(() => {
+            externalSetMode(null);
+        });
+        const leftPanelClosed = screen.queryByTestId('left-panel');
+        if (leftPanelClosed) {
+            expect(leftPanelClosed.className).toContain('-translate-x-full');
+        }
+    });
 });
+

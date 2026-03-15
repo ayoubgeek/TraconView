@@ -74,9 +74,9 @@ export default function AircraftDetailDrawer() {
   const lastSeenText = timeSinceMins < 1 ? 'Just now' : `${timeSinceMins} min ago`;
 
   return (
-    <div className="flex flex-col h-full bg-[#0A0F1A] border-l border-[#1A2235] w-80 shadow-2xl overflow-y-auto custom-scrollbar font-ui relative">
+    <div className="flex flex-col h-full bg-[#0A0F1A] border-l border-white/10 w-80 shadow-2xl overflow-y-auto custom-scrollbar font-ui relative">
       {/* Header */}
-      <div className="flex justify-between items-center p-4 border-b border-[#1A2235] bg-[#0A0F1A] sticky top-0 z-10 w-full">
+      <div className="flex justify-between items-center p-4 border-b border-white/10 bg-[#0A0F1A] sticky top-0 z-10 w-full">
         <h2 className="text-xl font-bold tracking-wider text-slate-100 font-data flex flex-col">
           <span>{aircraft.callsign || aircraft.id}</span>
           {isStale && <span className="text-[10px] text-slate-400 font-ui font-normal tracking-normal border border-slate-700/50 bg-[#1A2235]/50 px-1.5 py-0.5 mt-1 rounded inline-block w-max">Last seen: {lastSeenText}</span>}
@@ -102,15 +102,15 @@ export default function AircraftDetailDrawer() {
 
         {/* Quick Actions */}
         <section className="grid grid-cols-3 gap-2">
-          <button onClick={handlePin} className={`flex flex-col items-center justify-center p-2 rounded border transition-colors ${isPinned ? 'bg-atc-green/20 border-atc-green/50 text-atc-green' : 'bg-[#1A2235]/40 border-[#1A2235] text-slate-300 hover:bg-[#1A2235] hover:text-white'}`}>
+          <button onClick={handlePin} className={`flex flex-col items-center justify-center p-2 rounded border transition-colors ${isPinned ? 'bg-atc-green/20 border-atc-green/50 text-atc-green' : 'bg-[#1A2235]/40 border-white/10 text-slate-300 hover:bg-[#1A2235] hover:text-white'}`}>
             <MapPin className="w-4 h-4 mb-1" />
             <span className="text-[10px] font-bold uppercase">{isPinned ? 'Unpin' : 'Pin'}</span>
           </button>
-          <button onClick={handleGenerateSitRep} className="flex flex-col items-center justify-center p-2 rounded border border-[#1A2235] bg-[#1A2235]/40 text-slate-300 hover:bg-[#1A2235] hover:text-white transition-colors">
+          <button onClick={handleGenerateSitRep} className="flex flex-col items-center justify-center p-2 rounded border border-white/10 bg-[#1A2235]/40 text-slate-300 hover:bg-[#1A2235] hover:text-white transition-colors">
             <FileText className="w-4 h-4 mb-1" />
             <span className="text-[10px] font-bold uppercase text-center leading-tight">Sit<br/>Rep</span>
           </button>
-          <button onClick={handleExport} className="flex flex-col items-center justify-center p-2 rounded border border-[#1A2235] bg-[#1A2235]/40 text-slate-300 hover:bg-[#1A2235] hover:text-white transition-colors">
+          <button onClick={handleExport} className="flex flex-col items-center justify-center p-2 rounded border border-white/10 bg-[#1A2235]/40 text-slate-300 hover:bg-[#1A2235] hover:text-white transition-colors">
             <Download className="w-4 h-4 mb-1" />
             <span className="text-[10px] font-bold uppercase">Export</span>
           </button>
@@ -118,7 +118,7 @@ export default function AircraftDetailDrawer() {
 
         {/* Identity */}
         <section>
-          <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest border-b border-[#1A2235] pb-2 mb-3">Identity</h3>
+          <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest border-b border-white/10 pb-2 mb-3">Identity</h3>
           <div className="grid grid-cols-2 gap-y-3 font-data text-sm">
             <div>
               <div className="text-[10px] uppercase text-slate-500 tracking-wider">ICAO24</div>
@@ -137,7 +137,7 @@ export default function AircraftDetailDrawer() {
 
         {/* Flight Data */}
         <section>
-          <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest border-b border-[#1A2235] pb-2 mb-3">Flight Data</h3>
+          <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest border-b border-white/10 pb-2 mb-3">Flight Data</h3>
           <div className="grid grid-cols-2 gap-y-3 font-data text-sm">
             <div>
               <div className="text-[10px] uppercase text-slate-500 tracking-wider">Altitude</div>
