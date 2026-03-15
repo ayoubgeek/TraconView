@@ -28,7 +28,16 @@ export default function PinnedFlightsList() {
           return (
             <button
               key={ac.id}
-              onClick={() => setSelectedAircraft(ac.id)}
+              onClick={() => {
+                setSelectedAircraft(ac.id);
+                if (ac.lat != null && ac.lng != null) {
+                  window.dispatchEvent(
+                    new CustomEvent('center-map-on-aircraft', {
+                      detail: { icao24: ac.id, lat: ac.lat, lon: ac.lng }
+                    })
+                  );
+                }
+              }}
               className={`group w-full text-left px-4 py-2 flex items-center justify-between border-b border-[#1A2235]/50 transition-colors relative ${isSelected ? 'bg-atc-green/10 text-atc-green' : 'text-slate-300 hover:bg-[#1A2235]/40 hover:text-white'}`}
             >
               <div className="flex items-center gap-2">

@@ -7,16 +7,20 @@ import { POLL_INTERVAL_MS, DEGRADED_POLL_INTERVAL_MS, STALE_AIRCRAFT_MS } from '
 
 const OPENSKY_API = 'https://opensky-network.org/api/states/all';
 
+// How long without a successful fetch before we surface DEGRADED status
+const DEGRADED_THRESHOLD_MS = 30_000;
+
 export function useOpenSky() {
-  const {
-    selectedRegion,
-    setAircraftData,
-    setConnectionStatus,
-    removeStaleAircraft,
-    aircraftArray
-  } = useFlightStore();
+  // Individual selectors — each subscribes only to its own slice of state,
+  // avoiding the whole-store re-subscription caused by destructuring.
+  const selectedRegion      = useFlightStore(s => s.selectedRegion);
+  const setAircraftData     = useFlightStore(s => s.setAircraftData);
+  const setConnectionStatus = useFlightStore(s => s.setConnectionStatus);
+  const removeStaleAircraft = useFlightStore(s => s.removeStaleAircraft);
+  const aircraftArray       = useFlightStore(s => s.aircraftArray);
 
   const consecutiveErrors = useRef(0);
+  const lastSuccessfulFetchRef = useRef(Date.now());
   const timeoutRef = useRef(null);
   const abortControllerRef = useRef(null);
 
@@ -90,6 +94,7 @@ export function useOpenSky() {
       removeStaleAircraft(2 * STALE_AIRCRAFT_MS);
 
       consecutiveErrors.current = 0;
+      lastSuccessfulFetchRef.current = Date.now();
       setConnectionStatus('LIVE');
       scheduleNext(POLL_INTERVAL_MS);
 
@@ -99,9 +104,15 @@ export function useOpenSky() {
       console.error('Fetch Flight Data Error:', err);
       consecutiveErrors.current += 1;
 
+      const timeSinceSuccess = Date.now() - lastSuccessfulFetchRef.current;
+
       if (consecutiveErrors.current >= 3) {
         setConnectionStatus('OFFLINE');
-        scheduleNext(60000);
+        scheduleNext(DEGRADED_POLL_INTERVAL_MS);
+      } else if (timeSinceSuccess > DEGRADED_THRESHOLD_MS) {
+        // Feed has been stale for >30 s — surface DEGRADED before hitting OFFLINE
+        setConnectionStatus('DEGRADED');
+        scheduleNext(POLL_INTERVAL_MS);
       } else {
         scheduleNext(POLL_INTERVAL_MS);
       }

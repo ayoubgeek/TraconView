@@ -6,10 +6,12 @@ import React from 'react';
 
 describe('AnomalyExplanation', () => {
     it('renders all risk factors with label, weight, and timestamp', () => {
+        // Use `label` (not `description`) — matches the RiskFactor shape produced
+        // by riskScoring.js RISK_RULES, which set `label`, not `description`.
         const explanation = {
             factors: [
-                { id: 'f1', description: 'Squawk 7700', weight: 100, timestamp: '2026-03-14T10:00:00Z', details: 'General Emergency' },
-                { id: 'f2', description: 'Altitude Deviation', weight: 20, timestamp: '2026-03-14T10:05:00Z' }
+                { id: 'f1', label: 'Squawk 7700', weight: 100, timestamp: '2026-03-14T10:00:00Z', details: 'General Emergency' },
+                { id: 'f2', label: 'Altitude Deviation', weight: 20, timestamp: '2026-03-14T10:05:00Z' }
             ],
             firstDetectedAt: '2026-03-14T10:00:00Z',
             resolvedAt: null,
@@ -17,7 +19,7 @@ describe('AnomalyExplanation', () => {
         };
 
         render(<AnomalyExplanation explanation={explanation} threshold="CRITICAL" />);
-        
+
         // Assert labels
         expect(screen.getByText('Squawk 7700')).not.toBeNull();
         expect(screen.getByText('Altitude Deviation')).not.toBeNull();

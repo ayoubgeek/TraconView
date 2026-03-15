@@ -28,13 +28,16 @@ const playCriticalBeep = () => {
 };
 
 export function useAnomalyEngine() {
-  const aircraftArray = useFlightStore(state => state.aircraftArray);
+  const aircraftArray   = useFlightStore(state => state.aircraftArray);
   const addOrUpdateAlert = useFlightStore(state => state.addOrUpdateAlert);
-  const resolveAlert = useFlightStore(state => state.resolveAlert);
-  const isMuted = useFlightStore(state => state.isMuted);
-  const lastRefresh = useFlightStore(state => state.lastRefresh);
-  const selectedRegion = useFlightStore(state => state.selectedRegion);
-  const riskScores = useFlightStore(state => state.riskScores);
+  const resolveAlert    = useFlightStore(state => state.resolveAlert);
+  const isMuted         = useFlightStore(state => state.isMuted);
+  const lastRefresh     = useFlightStore(state => state.lastRefresh);
+  const selectedRegion  = useFlightStore(state => state.selectedRegion);
+  // riskScores is intentionally NOT subscribed here — we read the current value
+  // directly from the store inside the effect via getState() to avoid a stale
+  // closure without adding riskScores to the dep array (which would cause an
+  // infinite loop: effect sets riskScores → riskScores in deps triggers effect).
   
   const processedTimestamps = useRef(new Set());
 
@@ -49,11 +52,13 @@ export function useAnomalyEngine() {
     }
 
     let playedSoundThisTick = false;
-    const newRiskScores = new Map(riskScores);
+    // Read the live riskScores at effect-run time, not at hook-setup time.
+    const currentRiskScores = useFlightStore.getState().riskScores;
+    const newRiskScores = new Map(currentRiskScores);
     let storeChanged = false;
 
     aircraftArray.forEach(aircraft => {
-      const prevResult = riskScores.get(aircraft.id);
+      const prevResult = currentRiskScores.get(aircraft.id);
       
       const riskResult = computeRiskScore(aircraft, prevResult);
       newRiskScores.set(aircraft.id, riskResult);
@@ -116,6 +121,5 @@ export function useAnomalyEngine() {
       useFlightStore.setState({ riskScores: newRiskScores });
     }
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [aircraftArray, lastRefresh, addOrUpdateAlert, resolveAlert, isMuted, selectedRegion]); // removed setAircraftData completely
+  }, [aircraftArray, lastRefresh, addOrUpdateAlert, resolveAlert, isMuted, selectedRegion]);
 }

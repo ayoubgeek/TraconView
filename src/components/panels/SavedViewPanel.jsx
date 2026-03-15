@@ -106,7 +106,7 @@ export default function SavedViewPanel() {
       </div>
       
       <div className="mt-1 flex flex-wrap gap-1">
-        {view.state.filters?.category?.length > 0 && (
+        {view.state.filters?.categories?.length > 0 && (
           <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 bg-black/30 px-1 py-0.5 rounded border border-[#1A2235]">Cat Filters</span>
         )}
         {view.state.filters?.squawkCodes?.length > 0 && (

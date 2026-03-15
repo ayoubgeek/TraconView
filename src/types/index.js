@@ -95,7 +95,7 @@
 
 /**
  * @typedef {Object} FilterConfiguration
- * @property {string[]} [category] Array of categories
+ * @property {string[]} [categories] Array of categories
  * @property {string[]} [squawkCodes] Array of exact squawk codes
  * @property {Object} [altitudeBand] e.g. {min: 0, max: 5000}
  */

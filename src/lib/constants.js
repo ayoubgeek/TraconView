@@ -58,7 +58,7 @@ export const BUILT_IN_PRESETS = [
     name: 'Military Watch',
     isReadOnly: true,
     state: {
-      filters: { category: ['military'] }
+      filters: { categories: ['military'] }
     }
   },
   {
@@ -135,6 +135,8 @@ export const UI_INTERVALS = {
   EXPLANATION_TICK_MS: 60000,
   COPIED_TIMEOUT_MS: 2000
 };
+
+export const SELECTED_Z_INDEX_OFFSET = 1000;
 
 export const RISK_SCORE_BOUNDS = {
   CRITICAL: 76,

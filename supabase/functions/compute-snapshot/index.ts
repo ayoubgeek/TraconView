@@ -7,18 +7,68 @@ const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-const REGIONS = ['EUROPE', 'MOROCCO', 'NORTH_AMERICA', 'GERMANY', 'GLOBAL']
-
 const OPENSKY_API_URL = 'https://opensky-network.org/api/states/all';
 
-// Mock function representing risk scoring to count anomalies roughly
-// This is typically shared or replicated logic for the edge function
-function getAnomalySeverity(ac: any) {
-  // basic mock for severity based on emergency flags
-  if (ac.squawk === '7700') return 'CRITICAL';
-  if (ac.squawk === '7600' || ac.squawk === '7500') return 'WARNING';
-  if ((ac.baro_altitude && ac.baro_altitude < 1000 && !ac.on_ground) && ac.velocity > 250) return 'CAUTION';
-  if (ac.velocity > 550) return 'WATCH';
+// Region definitions with bounding boxes — must stay in sync with src/lib/constants.js REGIONS
+const REGION_BOUNDS: Record<string, { south: number; north: number; west: number; east: number } | null> = {
+  EUROPE:        { south: 35.0,  north: 72.0,  west: -15.0,  east: 40.0  },
+  MOROCCO:       { south: 20.0,  north: 37.0,  west: -18.0,  east: 5.0   },
+  NORTH_AMERICA: { south: 24.0,  north: 71.0,  west: -125.0, east: -66.0 },
+  GERMANY:       { south: 47.0,  north: 55.0,  west: 5.0,    east: 15.0  },
+  GLOBAL:        null, // no bbox filter — fetch everything
+};
+
+const REGIONS = Object.keys(REGION_BOUNDS);
+
+// Risk rules replicated exactly from src/lib/riskScoring.js RISK_RULES.
+// IMPORTANT: keep in sync with the frontend riskScoring.js whenever rules change.
+const RISK_RULES = [
+  { id: 'SQUAWK_7700',        weight: 50 },
+  { id: 'SQUAWK_7500',        weight: 50 },
+  { id: 'SQUAWK_7600',        weight: 35 },
+  { id: 'RAPID_DESCENT_HIGH', weight: 25 },
+  { id: 'RAPID_DESCENT_LOW',  weight: 15 },
+  { id: 'UNUSUAL_SPEED',      weight: 10 },
+  { id: 'SPI_ACTIVE',         weight: 10 },
+  { id: 'DATA_GAP',           weight:  5 },
+  { id: 'LOW_ALTITUDE',       weight:  5 },
+];
+
+const RISK_SCORE_BOUNDS = { CRITICAL: 76, WARNING: 51, CAUTION: 26, WATCH: 11 };
+
+function computeAnomalyScore(ac: {
+  squawk: string | null;
+  baro_altitude: number | null;
+  on_ground: boolean;
+  velocity: number | null;
+  vertical_rate: number | null;
+  spi: boolean;
+  last_contact: number;
+}): number {
+  const now = Date.now() / 1000;
+  let score = 0;
+  const altFt = ac.baro_altitude ? ac.baro_altitude * 3.28084 : 0;
+  const speedKts = ac.velocity ? ac.velocity * 1.94384 : 0;
+  const vrateFpm = ac.vertical_rate ? ac.vertical_rate * 196.85 : 0;
+
+  if (ac.squawk === '7700') score += RISK_RULES.find(r => r.id === 'SQUAWK_7700')!.weight;
+  if (ac.squawk === '7500') score += RISK_RULES.find(r => r.id === 'SQUAWK_7500')!.weight;
+  if (ac.squawk === '7600') score += RISK_RULES.find(r => r.id === 'SQUAWK_7600')!.weight;
+  if (vrateFpm < -2000 && altFt > 10000) score += RISK_RULES.find(r => r.id === 'RAPID_DESCENT_HIGH')!.weight;
+  if (vrateFpm < -1500 && altFt > 5000 && altFt <= 10000) score += RISK_RULES.find(r => r.id === 'RAPID_DESCENT_LOW')!.weight;
+  if (speedKts < 150 && altFt > 25000) score += RISK_RULES.find(r => r.id === 'UNUSUAL_SPEED')!.weight;
+  if (ac.spi) score += RISK_RULES.find(r => r.id === 'SPI_ACTIVE')!.weight;
+  if ((now - ac.last_contact) > 30) score += RISK_RULES.find(r => r.id === 'DATA_GAP')!.weight;
+  if (altFt < 1000 && altFt > 0 && !ac.on_ground) score += RISK_RULES.find(r => r.id === 'LOW_ALTITUDE')!.weight;
+
+  return Math.min(score, 100);
+}
+
+function getAnomalySeverity(score: number): string {
+  if (score >= RISK_SCORE_BOUNDS.CRITICAL) return 'CRITICAL';
+  if (score >= RISK_SCORE_BOUNDS.WARNING)  return 'WARNING';
+  if (score >= RISK_SCORE_BOUNDS.CAUTION)  return 'CAUTION';
+  if (score >= RISK_SCORE_BOUNDS.WATCH)    return 'WATCH';
   return 'NORMAL';
 }
 
@@ -27,13 +77,12 @@ Deno.serve(async (req) => {
   
   for (const region of REGIONS) {
     try {
-      // In a real scenario, limits bbox via OpenSky API for region.
-      // E.g., ?lamin=45.8&lomin=5.9&lamax=47.8&lomax=10.5
-      // To prevent taking too long and getting rate-limited by standard opensky, 
-      // we'll fetch a small bbox or mock it in this phase, 
-      // but the exact opensky call depends on region bounds.
-      
-      const res = await fetch(OPENSKY_API_URL);
+      const bbox = REGION_BOUNDS[region];
+      const qs = bbox
+        ? `?lamin=${bbox.south}&lamax=${bbox.north}&lomin=${bbox.west}&lomax=${bbox.east}`
+        : '';
+
+      const res = await fetch(`${OPENSKY_API_URL}${qs}`);
       if (!res.ok) throw new Error(`OpenSky fetch failed: ${res.statusText}`);
       
       const data = await res.json();
@@ -61,7 +110,9 @@ Deno.serve(async (req) => {
           baro_altitude: st[7],
           on_ground: st[8],
           velocity: st[9],
-          squawk: st[14]
+          vertical_rate: st[11],
+          squawk: st[14] !== null ? String(st[14]) : null,
+          spi: !!st[15]
         };
         
         if (!ac.on_ground) in_flight++;
@@ -81,8 +132,9 @@ Deno.serve(async (req) => {
         const speedKts = ac.velocity ? ac.velocity * 1.94384 : 0;
         sumSpeed += speedKts;
         
-        // Anomaly
-        const sev = getAnomalySeverity(ac);
+        // Anomaly — score via replicated RISK_RULES, then map to severity tier
+        const anomalyScore = computeAnomalyScore(ac);
+        const sev = getAnomalySeverity(anomalyScore);
         if (sev !== 'NORMAL') {
           active_anomalies++;
           anomaliesBySeverity[sev]++;
@@ -122,7 +174,7 @@ Deno.serve(async (req) => {
       };
 
       // Insert snapshot
-      const { data: insertResult, error } = await supabase
+      const { error } = await supabase
         .from('radar_snapshots')
         .insert({
           region,
@@ -143,7 +195,7 @@ Deno.serve(async (req) => {
 
     } catch (err) {
       console.error(`Error computing snapshot for ${region}:`, err);
-      results.push({ region, status: 'error', error: err.message });
+      results.push({ region, status: 'error', error: (err as Error).message });
     }
   }
 
