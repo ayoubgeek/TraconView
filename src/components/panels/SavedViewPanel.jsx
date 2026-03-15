@@ -76,7 +76,7 @@ export default function SavedViewPanel() {
 
   const ViewItem = ({ view }) => (
     <div 
-      className="group flex flex-col p-3 border-b border-[#1A2235]/50 hover:bg-[#1A2235]/40 transition-colors cursor-pointer"
+      className="group flex flex-col p-3 border-b border-white/10 hover:bg-[#1A2235]/40 transition-colors cursor-pointer"
       onClick={() => handleLoad(view.id)}
     >
       <div className="flex items-center justify-between">
@@ -107,7 +107,7 @@ export default function SavedViewPanel() {
       
       <div className="mt-1 flex flex-wrap gap-1">
         {view.state.filters?.category?.length > 0 && (
-          <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 bg-black/30 px-1 py-0.5 rounded border border-[#1A2235]">Cat Filters</span>
+          <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 bg-black/30 px-1 py-0.5 rounded border border-white/10">Cat Filters</span>
         )}
         {view.state.filters?.squawkCodes?.length > 0 && (
           <span className="text-[9px] font-bold uppercase tracking-widest text-orange-400/80 bg-orange-400/10 px-1 py-0.5 rounded border border-orange-400/20">Squawk Filters</span>
@@ -120,8 +120,8 @@ export default function SavedViewPanel() {
   );
 
   return (
-    <div className="flex flex-col h-full font-ui border-b border-[#1A2235] bg-[#0A0F1A]">
-      <div className="px-4 py-2 bg-[#050A15]/50 border-b border-[#1A2235] flex items-center justify-between">
+    <div className="flex flex-col h-full font-ui border-b border-white/10 bg-[#0A0F1A]">
+      <div className="px-4 py-2 bg-[#050A15]/50 border-b border-white/10 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Folder className="w-3.5 h-3.5 text-slate-400" />
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Saved Views</h3>
@@ -131,7 +131,7 @@ export default function SavedViewPanel() {
       <div className="overflow-y-auto custom-scrollbar flex-1 max-h-[300px]">
         {presets.length > 0 && (
           <div className="mb-2">
-            <div className="px-4 py-1.5 bg-[#1A2235]/30 border-y border-[#1A2235]/50 text-[10px] uppercase tracking-widest text-slate-500 font-bold">
+            <div className="px-4 py-1.5 bg-[#1A2235]/30 border-y border-white/10 text-[10px] uppercase tracking-widest text-slate-500 font-bold">
               Presets
             </div>
             {presets.map(view => <ViewItem key={view.id} view={view} />)}
@@ -140,7 +140,7 @@ export default function SavedViewPanel() {
         
         {myViews.length > 0 && (
            <div className="mb-2">
-             <div className="px-4 py-1.5 bg-[#1A2235]/30 border-y border-[#1A2235]/50 text-[10px] uppercase tracking-widest text-slate-500 font-bold">
+             <div className="px-4 py-1.5 bg-[#1A2235]/30 border-y border-white/10 text-[10px] uppercase tracking-widest text-slate-500 font-bold">
                My Views
              </div>
              {myViews.map(view => <ViewItem key={view.id} view={view} />)}
@@ -148,7 +148,7 @@ export default function SavedViewPanel() {
         )}
       </div>
 
-      <div className="p-3 bg-[#0A0F1A] border-t border-[#1A2235] sticky bottom-0">
+      <div className="p-3 bg-[#0A0F1A] border-t border-white/10 sticky bottom-0">
         <button 
           onClick={handleSaveCurrent}
           className="w-full flex items-center justify-center gap-2 py-2 bg-atc-green/10 hover:bg-atc-green/20 text-atc-green border border-atc-green/30 rounded transition-colors text-xs font-bold uppercase tracking-wider"

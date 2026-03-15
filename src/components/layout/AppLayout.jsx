@@ -1,16 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../ui/Header';
 import { useFlightStore } from '../../store/flightStore';
 import { ChevronLeft, ChevronRight, Menu } from 'lucide-react';
 import ErrorBoundary from '../ui/ErrorBoundary';
 import { ViewModeContext } from '../../context/ViewModeContext';
 
-export default function AppLayout({ header, sidebar, rightDrawer, children }) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+export default function AppLayout({ header, sidebar, rightDrawer, children, analyticsPanel }) {
+  const [leftPanelMode, setLeftPanelMode] = useState(null);
   const [viewMode, setViewMode] = useState('map');
   const selectedAircraftId = useFlightStore(state => state.selectedAircraftId);
 
-  const topBar = header || <Header />;
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && leftPanelMode) setLeftPanelMode(null);
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [leftPanelMode]);
+
+  const topBar = header 
+    ? React.cloneElement(header, { panelMode: leftPanelMode, onSetPanelMode: setLeftPanelMode }) 
+    : <Header panelMode={leftPanelMode} onSetPanelMode={setLeftPanelMode} />;
 
   return (
     <ViewModeContext.Provider value={{ viewMode, setViewMode }}>
@@ -22,7 +32,7 @@ export default function AppLayout({ header, sidebar, rightDrawer, children }) {
         {/* Mobile Sidebar Toggle - visible only on small screens */}
         <button 
           aria-label="Toggle Sidebar"
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          onClick={() => setLeftPanelMode(leftPanelMode === 'navigation' ? null : 'navigation')}
           className="md:hidden absolute top-3 left-4 z-[1001] bg-[#1A2235]/90 border border-slate-700 p-2 rounded text-slate-300"
         >
           <Menu className="w-5 h-5" />
@@ -34,17 +44,18 @@ export default function AppLayout({ header, sidebar, rightDrawer, children }) {
         
         {/* Left Sidebar Slot */}
         <aside 
-          data-testid="left-sidebar"
+          data-testid="left-panel"
           className={`
             absolute md:relative h-full flex-none bg-[#0A0F1A]/95 md:bg-[#0A0F1A] backdrop-blur-md md:backdrop-blur-none 
             border-r border-slate-800 z-40 transform transition-transform duration-300 ease-in-out
-            ${isSidebarOpen ? 'translate-x-0 w-80' : '-translate-x-full w-80 md:w-0'}
+            ${leftPanelMode ? 'translate-x-0 w-80' : '-translate-x-full w-80 md:w-0'}
           `}
         >
           <div className="w-80 h-full overflow-y-auto [&::-webkit-scrollbar]:hidden">
             {/* Wrap sidebar contents in ErrorBoundary per T067 */}
             <ErrorBoundary fallback={<div className="p-2 text-atc-dim">Sidebar unavailable</div>}>
-              {sidebar}
+              {leftPanelMode === 'navigation' && sidebar}
+              {leftPanelMode === 'analytics' && analyticsPanel}
             </ErrorBoundary>
           </div>
         </aside>
@@ -52,16 +63,16 @@ export default function AppLayout({ header, sidebar, rightDrawer, children }) {
         {/* Desktop Sidebar Toggle Button */}
         <button
           aria-label="Toggle Sidebar"
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          onClick={() => setLeftPanelMode(leftPanelMode ? null : 'navigation')}
           className={`
             hidden md:flex absolute z-50 top-1/2 -translate-y-1/2 
             bg-[#1A2235] border border-slate-700 border-l-0 rounded-r-md 
             w-5 h-12 items-center justify-center 
             text-slate-400 hover:text-white transition-all duration-300
-            ${isSidebarOpen ? 'left-80' : 'left-0'}
+            ${leftPanelMode ? 'left-80' : 'left-0'}
           `}
         >
-          {isSidebarOpen ? <ChevronLeft className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+          {leftPanelMode ? <ChevronLeft className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
         </button>
 
         {/* Center Area Slot (Map or Table) */}
