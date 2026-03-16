@@ -16,10 +16,17 @@
   font-family: var(--font-sans);
 }
 
-.flight-panel-close {
+.flight-panel-actions {
   position: absolute;
   top: 16px;
   right: 16px;
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+.flight-panel-close,
+.flight-panel-action-btn {
   background: rgba(15, 23, 42, 0.7);
   backdrop-filter: blur(4px);
   border: 1px solid var(--color-border);
@@ -28,7 +35,6 @@
   padding: 6px;
   border-radius: 50%;
   transition: all 0.2s;
-  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -39,6 +45,19 @@
   border-color: var(--color-danger);
   color: #fff;
   transform: scale(1.05);
+}
+
+.flight-panel-action-btn:hover {
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #000;
+  transform: scale(1.05);
+}
+
+.flight-panel-action-btn.active {
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #000;
 }
 
 /* Hero Section */
@@ -184,6 +203,11 @@
   flex-direction: column;
   align-items: center;
   width: 80px;
+}
+
+.route-flag {
+  font-size: 1.5rem;
+  line-height: 1;
 }
 
 .route-code {

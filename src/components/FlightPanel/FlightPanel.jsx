@@ -3,7 +3,7 @@
  * @description Slide-in detail panel for a selected aircraft, enriched with photos and routes.
  */
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useSelection } from '../../context/SelectionContext';
@@ -18,11 +18,12 @@ import {
   formatSquawk,
   formatPositionSource
 } from '../../utils/format';
+import { countryNameToFlag, airportToFlag } from '../../utils/airports';
 import './FlightPanel.css';
-import { X, Plane, ExternalLink, Image as ImageIcon } from 'lucide-react';
+import { X, Plane, ExternalLink, Crosshair, Eye } from 'lucide-react';
 
 export default function FlightPanel() {
-  const { selectedAircraftId, clearSelection } = useSelection();
+  const { selectedAircraftId, clearSelection, isFocused, toggleFocus } = useSelection();
   const aircraft = useAircraftById(selectedAircraftId);
   
   const [now, setNow] = useState(() => Date.now());
@@ -78,15 +79,29 @@ export default function FlightPanel() {
   const derivedRoute = aircraft.route || route;
   const isRouteLoading = !aircraft.route && isLoadingRoute;
 
+  const originFlag = derivedRoute?.origin ? airportToFlag(derivedRoute.origin) : '';
+  const destFlag = derivedRoute?.destination ? airportToFlag(derivedRoute.destination) : '';
+  const countryFlag = countryNameToFlag(aircraft.originCountry);
+
   return (
     <div id="flight-panel" className="flight-panel animate-slide-right">
-      <button 
-        aria-label="Close"
-        className="flight-panel-close" 
-        onClick={clearSelection}
-      >
-        <X size={24} />
-      </button>
+      <div className="flight-panel-actions">
+        <button
+          aria-label={isFocused ? 'Show all aircraft' : 'Track this aircraft only'}
+          className={`flight-panel-action-btn ${isFocused ? 'active' : ''}`}
+          onClick={toggleFocus}
+          title={isFocused ? 'Show all aircraft' : 'Track this aircraft only'}
+        >
+          {isFocused ? <Eye size={18} /> : <Crosshair size={18} />}
+        </button>
+        <button
+          aria-label="Close"
+          className="flight-panel-close"
+          onClick={clearSelection}
+        >
+          <X size={24} />
+        </button>
+      </div>
 
       {/* Hero Visual Block */}
       <div className="flight-panel-hero">
@@ -119,7 +134,7 @@ export default function FlightPanel() {
           <div className="fp-header-meta">
             <span className="fp-icao24">{aircraft.icao24.toUpperCase()}</span>
             {aircraft.originCountry && (
-              <span className="fp-country">{aircraft.originCountry}</span>
+              <span className="fp-country">{countryFlag} {aircraft.originCountry}</span>
             )}
           </div>
         </div>
@@ -131,6 +146,7 @@ export default function FlightPanel() {
           ) : derivedRoute && derivedRoute.origin && derivedRoute.destination ? (
             <div className="route-display">
               <div className="route-point">
+                {originFlag && <span className="route-flag">{originFlag}</span>}
                 <span className="route-code">{derivedRoute.origin}</span>
                 <span className="route-label">Origin</span>
               </div>
@@ -139,6 +155,7 @@ export default function FlightPanel() {
                 <div className="route-line"></div>
               </div>
               <div className="route-point">
+                {destFlag && <span className="route-flag">{destFlag}</span>}
                 <span className="route-code">{derivedRoute.destination}</span>
                 <span className="route-label">Destination</span>
               </div>

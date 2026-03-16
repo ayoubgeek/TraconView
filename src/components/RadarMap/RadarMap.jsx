@@ -31,11 +31,16 @@ function MapEventsHandler() {
 
 export default function RadarMap() {
   const { aircraft } = useAircraftDataContext();
+  const { selectedAircraftId, isFocused } = useSelection();
+
+  const visibleAircraft = isFocused && selectedAircraftId
+    ? Array.from(aircraft.values()).filter(ac => ac.icao24 === selectedAircraftId)
+    : Array.from(aircraft.values());
 
   return (
     <MapContainer
-      center={[39.8283, -98.5795]}
-      zoom={5}
+      center={[51.1657, 10.4515]}
+      zoom={6}
       zoomControl={false}
       className="radar-map-container"
       minZoom={3}
@@ -46,7 +51,7 @@ export default function RadarMap() {
       />
       <MapController />
       <MapEventsHandler />
-      
+
       {aircraft.size === 0 && (
         <div className="radar-map-loading">
           <div className="spinner"></div>
@@ -56,7 +61,7 @@ export default function RadarMap() {
 
       <SelectedAircraftTrail />
 
-      {Array.from(aircraft.values()).map(ac => (
+      {visibleAircraft.map(ac => (
         <AircraftMarker key={ac.icao24} aircraft={ac} />
       ))}
     </MapContainer>
