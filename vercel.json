@@ -2,7 +2,7 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/api/opensky/:path*", "destination": "https://opensky-network.org/api/:path*" },
+    { "source": "/api/opensky/states/all", "destination": "/api/opensky-proxy" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
