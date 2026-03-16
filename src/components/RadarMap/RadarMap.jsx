@@ -13,6 +13,28 @@ import { useSelection } from '../../context/SelectionContext';
 import SelectedAircraftTrail from '../map/SelectedAircraftTrail';
 import './RadarMap.css';
 
+function SelectedAircraftTracker() {
+  const map = useMap();
+  const { selectedAircraftId } = useSelection();
+  const { aircraft } = useAircraftDataContext();
+
+  React.useEffect(() => {
+    if (selectedAircraftId && aircraft.has(selectedAircraftId)) {
+      const ac = aircraft.get(selectedAircraftId);
+      // panInside only moves the map if the target is outside the padded bounds
+      map.panInside([ac.lat, ac.lng], { 
+        paddingTopLeft: [50, 50],
+        paddingBottomRight: [400, 50], // Account for the right sliding panel
+        animate: true, 
+        duration: 0.8 
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedAircraftId, map]); // Only trigger when ID changes, not on every data tick
+
+  return null;
+}
+
 function MapController() {
   const map = useMap();
   useAircraftData(map);
@@ -59,6 +81,7 @@ export default function RadarMap() {
         </div>
       )}
 
+      <SelectedAircraftTracker />
       <SelectedAircraftTrail />
 
       {visibleAircraft.map(ac => (

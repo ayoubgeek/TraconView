@@ -1,10 +1,9 @@
 /**
  * @file FlightPanel.jsx
- * @description Slide-in detail panel for a selected aircraft, enriched with photos.
+ * @description Slide-in detail panel for a selected aircraft, engineered to mimic premium flight trackers.
  */
 
-import { useEffect, useState } from 'react';
-
+import React, { useEffect, useState } from 'react';
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useSelection } from '../../context/SelectionContext';
 import { useAircraftById } from '../../context/AircraftDataContext';
@@ -20,8 +19,9 @@ import {
   formatPositionSource
 } from '../../utils/format';
 import { countryNameToFlag } from '../../utils/airports';
+import { callsignToAirline } from '../../utils/airlines';
 import './FlightPanel.css';
-import { X, Plane, ExternalLink, Crosshair, Eye, Navigation } from 'lucide-react';
+import { X, Plane, ExternalLink, Crosshair, Eye, Navigation, AlertTriangle, ShieldAlert } from 'lucide-react';
 
 export default function FlightPanel() {
   const { selectedAircraftId, clearSelection, isFocused, toggleFocus } = useSelection();
@@ -29,8 +29,6 @@ export default function FlightPanel() {
   const { track } = useAircraftTrack(selectedAircraftId);
 
   const [now, setNow] = useState(() => Date.now());
-
-  // Throttle the context aircraft object to avoid re-triggering enrichment hook rapid changes on tick
   const [stableAircraft, setStableAircraft] = useState(null);
 
   useEffect(() => {
@@ -46,7 +44,7 @@ export default function FlightPanel() {
     }
   }, [aircraft, stableAircraft]);
 
-  const { photo, isLoadingPhoto } = useAircraftEnrichment(stableAircraft);
+  const { photo, route, isLoadingPhoto, isLoadingRoute } = useAircraftEnrichment(stableAircraft);
 
   // Swipe-to-dismiss for mobile
   useEffect(() => {
@@ -79,6 +77,11 @@ export default function FlightPanel() {
   if (!selectedAircraftId || !aircraft) return null;
 
   const countryFlag = countryNameToFlag(aircraft.originCountry);
+  const airlineName = callsignToAirline(aircraft.callsign);
+  const secondsAgo = Math.max(0, Math.round(now / 1000) - aircraft.lastContact);
+  
+  const isEmergency = aircraft.squawk === '7700';
+  const isLossOfComms = aircraft.squawk === '7600';
 
   return (
     <div id="flight-panel" className="flight-panel animate-slide-right">
@@ -100,7 +103,7 @@ export default function FlightPanel() {
         </button>
       </div>
 
-      {/* Hero Visual Block */}
+      {/* SECTION A: HERO HEADER */}
       <div className="flight-panel-hero">
         {isLoadingPhoto ? (
           <div className="hero-loading skeleton"></div>
@@ -108,7 +111,7 @@ export default function FlightPanel() {
           <div className="hero-image-wrapper">
             <img src={photo.thumbnail} alt={`Aircraft ${aircraft.icao24}`} className="hero-image" />
             <div className="hero-attribution">
-              <span>Photo by {photo.photographer}</span>
+              <span>Photo: {photo.photographer}</span>
               <a href={photo.link} target="_blank" rel="noreferrer" title="View on Planespotters.net">
                 <ExternalLink size={10} />
               </a>
@@ -123,45 +126,116 @@ export default function FlightPanel() {
       </div>
 
       <div className="flight-panel-content">
-        {/* Header Block */}
-        <div className="flight-panel-header">
-          <div className="fp-header-main">
-            <h2>{aircraft.callsign || 'N/A'}</h2>
+        
+        {/* IDENTIFICATION BLOCK */}
+        <div className="section-header">
+          <div className="header-primary">
+            <h2 className="header-callsign">{aircraft.callsign || aircraft.icao24.toUpperCase()}</h2>
+            <div className="header-tags">
+              {airlineName && <span className="tag-airline">{airlineName}</span>}
+              <span className="tag-icao24">{aircraft.icao24.toUpperCase()}</span>
+            </div>
           </div>
-          <div className="fp-header-meta">
-            <span className="fp-icao24">{aircraft.icao24.toUpperCase()}</span>
-            {aircraft.originCountry && (
-              <span className="fp-country">{countryFlag} {aircraft.originCountry}</span>
-            )}
+          <div className="header-secondary">
+            <span className="header-operator">{airlineName || 'Operator Unknown'}</span>
+            <span className="header-country">{countryFlag} {aircraft.originCountry || 'Unknown'}</span>
           </div>
         </div>
 
-        {/* Track Info Section */}
-        <div className="flight-panel-track-section">
-          <div className="track-info">
-            <Navigation size={14} className="track-icon" />
-            <span className="track-label">
-              {track.length > 1
-                ? `Tracking — ${track.length} positions recorded`
-                : 'Tracking — waiting for movement...'}
-            </span>
-          </div>
-          {isFocused && (
-            <span className="track-focused-badge">FOCUSED</span>
+        {/* SECTION B: ROUTE BLOCK */}
+        <div className="section-route">
+          {isLoadingRoute ? (
+             <div className="route-loading skeleton"></div>
+          ) : route ? (
+             <div className="route-display">
+                <div className="route-node">
+                   <span className="route-iata">{route.origin}</span>
+                   <span className="route-label">ORIGIN</span>
+                </div>
+                <div className="route-progress">
+                   <div className="route-line-bar">
+                     <Plane size={16} className="route-plane-icon" style={{ left: '50%' }} />
+                   </div>
+                </div>
+                <div className="route-node">
+                   <span className="route-iata">{route.destination}</span>
+                   <span className="route-label">DEST</span>
+                </div>
+             </div>
+          ) : (
+             <div className="route-unavailable">
+                <span>Route data unavailable</span>
+             </div>
           )}
         </div>
 
-        {/* Metrics Grid */}
-        <div className="flight-panel-grid">
-          <FlightField label="Altitude" value={formatAltitude(aircraft.altitudeFt)} />
-          <FlightField label="Speed" value={formatSpeed(aircraft.speedKnots)} />
-          <FlightField label="Heading" value={formatHeading(aircraft.heading)} />
-          <FlightField label="Vert Rate" value={formatVertRate(aircraft.vertRateFpm)} />
-          <FlightField label="Squawk" value={formatSquawk(aircraft.squawk)} />
-          <FlightField label="Source" value={formatPositionSource(aircraft.positionSource)} />
-          <FlightField label="Status" value={aircraft.onGround === null || aircraft.onGround === undefined ? '—' : (aircraft.onGround ? 'On Ground' : 'Airborne')} />
-          <FlightField label="Last Contact" value={`${Math.max(0, Math.round(now / 1000) - aircraft.lastContact)}s ago`} />
+        {/* SECTION C: LIVE FLIGHT STATUS GRID */}
+        <div className="section-block section-live-metrics">
+          <div className="section-title">
+             <Navigation size={14} /> LIVE FLIGHT DATA
+          </div>
+          <div className="metrics-grid">
+            <div className="metric-box highlight">
+              <span className="metric-label">ALTITUDE</span>
+              <span className="metric-value">{formatAltitude(aircraft.altitudeFt)}</span>
+            </div>
+            <div className="metric-box highlight">
+              <span className="metric-label">GROUND SPEED</span>
+              <span className="metric-value">{formatSpeed(aircraft.speedKnots)}</span>
+            </div>
+            <div className="metric-box">
+              <span className="metric-label">HEADING</span>
+              <span className="metric-value">{formatHeading(aircraft.heading)}</span>
+            </div>
+            <div className="metric-box">
+              <span className="metric-label">VERT SPEED</span>
+              <span className="metric-value">{formatVertRate(aircraft.vertRateFpm)}</span>
+            </div>
+          </div>
         </div>
+
+        {/* SECTION D: AIRCRAFT INFO & GEOMETRY */}
+        <div className="section-block">
+          <div className="info-grid">
+            <FlightField label="Squawk" value={formatSquawk(aircraft.squawk)} />
+            <FlightField label="Status" value={aircraft.onGround === null ? '—' : (aircraft.onGround ? 'On Ground' : 'Airborne')} />
+            <FlightField label="Latitude" value={aircraft.lat != null ? aircraft.lat.toFixed(4) : '—'} />
+            <FlightField label="Longitude" value={aircraft.lng != null ? aircraft.lng.toFixed(4) : '—'} />
+            <FlightField label="Source" value={formatPositionSource(aircraft.positionSource)} />
+            <FlightField label="Last Contact" value={`${secondsAgo}s ago`} />
+          </div>
+        </div>
+
+        {/* SECTION E: CONTEXT / ALERTS */}
+        {(isEmergency || isLossOfComms || secondsAgo > 60 || (track && track.length > 5)) && (
+          <div className="section-block section-context">
+            {isEmergency && (
+              <div className="alert-box critical">
+                <ShieldAlert size={16} />
+                <span><strong>7700 SQUAWK</strong> General Emergency Declared</span>
+              </div>
+            )}
+            {isLossOfComms && (
+              <div className="alert-box warning">
+                <AlertTriangle size={16} />
+                <span><strong>7600 SQUAWK</strong> Radio Failure / Loss of Comms</span>
+              </div>
+            )}
+            {secondsAgo > 60 && !isEmergency && !isLossOfComms && (
+              <div className="alert-box muted">
+                <AlertTriangle size={16} />
+                <span>Stale Data: Position hasn't updated in {secondsAgo}s</span>
+              </div>
+            )}
+            {track && track.length > 5 && secondsAgo <= 60 && !isEmergency && !isLossOfComms && (
+              <div className="alert-box success">
+                <Navigation size={16} />
+                <span>Live tracking active • {track.length} positions recorded</span>
+              </div>
+            )}
+          </div>
+        )}
+        
       </div>
     </div>
   );

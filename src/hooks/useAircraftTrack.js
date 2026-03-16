@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useAircraftById } from '../context/AircraftDataContext';
 
 const MAX_TRACK_POINTS = 500;
@@ -17,11 +18,9 @@ export function useAircraftTrack(icao24) {
 
   // Reset track when aircraft changes
   useEffect(() => {
-    if (!icao24) {
-      trackRef.current = [];
-      lastPosRef.current = null;
-      setTrack([]);
-    }
+    trackRef.current = [];
+    lastPosRef.current = null;
+    setTrack([]);
   }, [icao24]);
 
   // Accumulate positions as aircraft data updates

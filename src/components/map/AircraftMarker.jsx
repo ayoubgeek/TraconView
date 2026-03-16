@@ -23,11 +23,20 @@ function AircraftMarkerBase({ aircraft }) {
   
   const isSelected = selectedAircraftId === aircraft.icao24;
   
+  const altFormatted = aircraft.altitudeFt != null ? `${Math.round(aircraft.altitudeFt).toLocaleString()} ft` : 'N/A';
+  const spdFormatted = aircraft.speedKnots != null ? `${Math.round(aircraft.speedKnots)} kt` : 'N/A';
+
   const iconHtml = `
-    <div class="aircraft-icon-container animate-fade-in" style="transform: rotate(${aircraft.heading || 0}deg);">
-      <div class="aircraft-svg-wrapper ${isSelected ? 'selected' : ''}">
+    <div class="aircraft-icon-container animate-fade-in ${isSelected ? 'selected' : ''}">
+      <div class="aircraft-svg-wrapper" style="transform: rotate(${aircraft.heading || 0}deg);">
         ${airplaneSvg}
       </div>
+      ${isSelected ? `
+        <div class="aircraft-floating-label">
+          <strong>${aircraft.callsign || aircraft.icao24.toUpperCase()}</strong>
+          <span>${altFormatted} • ${spdFormatted}</span>
+        </div>
+      ` : ''}
     </div>
   `;
   

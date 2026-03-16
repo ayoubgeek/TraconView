@@ -111,7 +111,7 @@ const ICAO_PREFIX_MAP = {
   'OR': 'IQ',               // Iraq
   'OK': 'KW',               // Kuwait
   'OE': 'SA',               // Saudi Arabia
-  'OO': 'AE', 'OM': 'AE',  // UAE
+  'OM': 'AE',               // UAE
   'OT': 'QA',               // Qatar
   'OB': 'BH',               // Bahrain
   'OO': 'OM',               // Oman

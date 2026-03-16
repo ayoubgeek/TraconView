@@ -78,10 +78,10 @@ describe('FlightPanel', () => {
     expect(screen.getByText('1234')).toBeDefined();
     expect(screen.getByText('ADS-B')).toBeDefined();
     expect(screen.getByText('Airborne')).toBeDefined();
-    expect(screen.getByText('United States')).toBeDefined();
+    expect(screen.getByText(/United States/)).toBeDefined();
 
-    // No route section should be present
-    expect(screen.queryByText('Route')).toBeNull();
+    // No route section details should be present
+    expect(screen.queryByText('ORIGIN')).toBeNull();
   });
 
   it('renders route section when available', () => {
@@ -101,8 +101,8 @@ describe('FlightPanel', () => {
     render(<FlightPanel />);
     expect(screen.getByText('SFO')).toBeDefined();
     expect(screen.getByText('LAX')).toBeDefined();
-    expect(screen.getByText('Origin')).toBeDefined();
-    expect(screen.getByText('Destination')).toBeDefined();
+    expect(screen.getByText('ORIGIN')).toBeDefined();
+    expect(screen.getByText('DEST')).toBeDefined();
   });
 
   it('renders null fields as "—"', () => {

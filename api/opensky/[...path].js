@@ -2,8 +2,6 @@ export default async function handler(req, res) {
   // Extract the target path
   // The route will be /api/opensky/...
   // We want to proxy to https://opensky-network.org/api/...
-  
-  const protocol = req.headers['x-forwarded-proto'] || 'https';
   let targetUrl = `https://opensky-network.org/api${req.url.replace(/^\/api\/opensky/, '')}`;
   
   if (!targetUrl.includes('?')) {
