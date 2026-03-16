@@ -1,5 +1,5 @@
 // api/opensky-proxy.js
-// Edge Function proxy to OpenSky's /api/states/all endpoint.
+// Edge Function proxy to OpenSky Network API.
 // Runs on Vercel Edge Network to avoid datacenter IP blocks.
 export const config = { runtime: 'edge' };
 
@@ -17,7 +17,10 @@ export default async function handler(request) {
 
   try {
     const incoming = new URL(request.url);
-    const targetUrl = `https://opensky-network.org/api/states/all${incoming.search}`;
+    // Extract the OpenSky API path from the "path" query param, default to states/all
+    const apiPath = incoming.searchParams.get('_path') || 'states/all';
+    incoming.searchParams.delete('_path');
+    const targetUrl = `https://opensky-network.org/api/${apiPath}${incoming.search}`;
 
     const fetchHeaders = {
       'Accept': 'application/json',
