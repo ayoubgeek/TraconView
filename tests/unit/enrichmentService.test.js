@@ -82,7 +82,7 @@ describe('enrichmentService', () => {
         origin: 'KJFK',
         destination: 'LHR'
       });
-      expect(global.fetch).toHaveBeenCalledWith('/api/opensky-proxy?_path=routes&callsign=BAW1');
+      expect(global.fetch).toHaveBeenCalledWith('/api/opensky/routes?callsign=BAW1');
     });
 
     it('returns null on 404', async () => {

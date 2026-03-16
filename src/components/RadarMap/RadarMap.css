@@ -61,6 +61,41 @@
   border-radius: 4px;
 }
 
+.aircraft-floating-label {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 8px;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  z-index: 1001;
+}
+
+.aircraft-floating-label strong {
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.5px;
+}
+
+.aircraft-floating-label span {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  font-family: var(--font-mono);
+  line-height: 1.2;
+  margin-top: 2px;
+}
+
 .leaflet-tooltip-top:before {
   border-top-color: var(--color-border) !important;
 }
