@@ -1,61 +1,60 @@
 // api/opensky-proxy.js
-// Proxies requests to OpenSky's /api/states/all endpoint.
-// Strips browser Origin header to bypass CORS. No auth needed.
-export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+// Edge Function proxy to OpenSky's /api/states/all endpoint.
+// Runs on Vercel Edge Network to avoid datacenter IP blocks.
+export const config = { runtime: 'edge' };
 
-  if (req.method === 'OPTIONS') {
-    return res.status(204).end();
+export default async function handler(request) {
+  if (request.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+      }
+    });
   }
 
   try {
-    const url = new URL(req.url, `https://${req.headers.host}`);
-    const queryString = url.search || '';
-    const targetUrl = `https://opensky-network.org/api/states/all${queryString}`;
-
-    const abortController = new AbortController();
-    const timeout = setTimeout(() => abortController.abort(), 25000);
+    const incoming = new URL(request.url);
+    const targetUrl = `https://opensky-network.org/api/states/all${incoming.search}`;
 
     const fetchHeaders = {
       'Accept': 'application/json',
-      'User-Agent': 'TraconView/2.0'
+      'User-Agent': 'Mozilla/5.0 TraconView/2.0'
     };
 
-    if (req.headers.authorization) {
-      fetchHeaders['Authorization'] = req.headers.authorization;
+    const auth = request.headers.get('authorization');
+    if (auth) {
+      fetchHeaders['Authorization'] = auth;
     }
 
     const apiRes = await fetch(targetUrl, {
       method: 'GET',
-      headers: fetchHeaders,
-      signal: abortController.signal
+      headers: fetchHeaders
     });
 
-    clearTimeout(timeout);
-
-    res.status(apiRes.status);
+    const responseHeaders = {
+      'Access-Control-Allow-Origin': '*',
+      'Content-Type': 'application/json'
+    };
 
     const rateLimit = apiRes.headers.get('x-rate-limit-remaining');
-    if (rateLimit) {
-      res.setHeader('X-Rate-Limit-Remaining', rateLimit);
-    }
+    if (rateLimit) responseHeaders['X-Rate-Limit-Remaining'] = rateLimit;
 
     const retryAfter = apiRes.headers.get('x-rate-limit-retry-after-seconds');
-    if (retryAfter) {
-      res.setHeader('X-Rate-Limit-Retry-After-Seconds', retryAfter);
-    }
+    if (retryAfter) responseHeaders['X-Rate-Limit-Retry-After-Seconds'] = retryAfter;
 
-    const data = await apiRes.json();
-    return res.json(data);
+    const data = await apiRes.text();
+    return new Response(data, {
+      status: apiRes.status,
+      headers: responseHeaders
+    });
 
   } catch (err) {
-    if (err.name === 'AbortError') {
-      return res.status(504).json({ error: 'OpenSky API timeout' });
-    }
-    const cause = err.cause ? (err.cause.code || err.cause.message || String(err.cause)) : 'unknown';
-    console.error('API Proxy Error:', err.message, 'cause:', cause);
-    return res.status(502).json({ error: 'Proxy error', message: err.message, cause });
+    return new Response(
+      JSON.stringify({ error: 'Proxy error', message: err.message }),
+      { status: 502, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
+    );
   }
 }
