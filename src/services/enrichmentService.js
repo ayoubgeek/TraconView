@@ -45,7 +45,7 @@ export async function fetchRouteInfo(callsign) {
   if (!cleanCallsign) return null;
 
   try {
-    const response = await fetch(`https://opensky-network.org/api/routes?callsign=${cleanCallsign}`);
+    const response = await fetch(`/api/opensky/routes?callsign=${cleanCallsign}`);
     if (!response.ok) {
       if (response.status === 404) return null;
       throw new Error(`OpenSky Routes API error: ${response.status}`);

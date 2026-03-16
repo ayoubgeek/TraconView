@@ -8,4 +8,13 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
   },
+  server: {
+    proxy: {
+      '/api/opensky': {
+        target: 'https://opensky-network.org/api',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/opensky/, '')
+      }
+    }
+  }
 });

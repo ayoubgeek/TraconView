@@ -1,5 +1,11 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "framework": "vite"
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/api/opensky/:match*",
+      "destination": "https://opensky-network.org/api/:match*"
+    }
+  ]
 }

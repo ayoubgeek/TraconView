@@ -28,7 +28,8 @@ function parseHeaderNum(headers, name, fallback = -1) {
  */
 export async function fetchStateVectors(bbox, accessToken = null) {
   try {
-    const url = new URL(OPENSKY_STATES_URL);
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
+    const url = new URL(OPENSKY_STATES_URL, baseUrl);
     url.searchParams.append('lamin', String(bbox.south));
     url.searchParams.append('lomin', String(bbox.west));
     url.searchParams.append('lamax', String(bbox.north));

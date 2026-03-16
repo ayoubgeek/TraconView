@@ -29,7 +29,7 @@ export function useAircraftTrack(icao24) {
 
     async function fetchTrack() {
       try {
-        const response = await fetch(`https://opensky-network.org/api/tracks/all?icao24=${icao24}&time=0`);
+        const response = await fetch(`/api/opensky/tracks/all?icao24=${icao24}&time=0`);
         if (!response.ok) {
           throw new Error('Track fetch failed');
         }

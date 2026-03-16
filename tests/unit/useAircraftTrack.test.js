@@ -48,7 +48,7 @@ describe('useAircraftTrack', () => {
       [48.0, 11.0],
       [48.1, 11.1]
     ]);
-    expect(global.fetch).toHaveBeenCalledWith('https://opensky-network.org/api/tracks/all?icao24=a1b2c3&time=0');
+    expect(global.fetch).toHaveBeenCalledWith('/api/opensky/tracks/all?icao24=a1b2c3&time=0');
   });
 
   it('handles network errors gracefully returning empty track', async () => {

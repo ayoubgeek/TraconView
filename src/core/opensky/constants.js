@@ -14,5 +14,5 @@ export const AIRCRAFT_FADE_MS = 2_000;
 export const IDLE_PAUSE_MS = 300_000; // 5 min
 export const VIEWPORT_DEBOUNCE_MS = 500;
 
-export const OPENSKY_STATES_URL = 'https://opensky-network.org/api/states/all';
+export const OPENSKY_STATES_URL = '/api/opensky/states/all';
 export const OPENSKY_TOKEN_URL = 'https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token';
