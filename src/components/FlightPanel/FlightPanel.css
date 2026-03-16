@@ -183,79 +183,42 @@
   font-weight: 500;
 }
 
-/* Route Section */
-.flight-panel-route-section {
-  margin-bottom: 32px;
+/* Track Info Section */
+.flight-panel-track-section {
+  margin-bottom: 24px;
   background-color: var(--color-bg);
   border-radius: 12px;
   border: 1px solid var(--color-border);
-  padding: 16px;
-}
-
-.route-display {
+  padding: 12px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.route-point {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 80px;
-}
-
-.route-flag {
-  font-size: 1.5rem;
-  line-height: 1;
-}
-
-.route-code {
-  font-size: 1.5rem;
-  font-weight: 700;
-  font-family: var(--font-mono);
-  color: var(--color-accent);
-}
-
-.route-label {
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-text-muted);
-  margin-top: 4px;
-}
-
-.route-arrow {
-  flex-grow: 1;
+.track-info {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.track-icon {
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.track-label {
+  font-size: 0.8rem;
   color: var(--color-text-muted);
-  padding: 0 16px;
 }
 
-.route-line {
-  height: 2px;
-  flex-grow: 1;
-  background-image: linear-gradient(90deg, var(--color-border), var(--color-text-muted) 50%, var(--color-border));
-  opacity: 0.5;
-}
-
-.route-unknown {
-  text-align: center;
-  font-size: 0.875rem;
-  color: var(--color-text-muted);
-  padding: 8px 0;
-  font-style: italic;
-}
-
-.route-loading.skeleton {
-  height: 48px;
-  border-radius: 8px;
-  width: 100%;
-  background: linear-gradient(90deg, var(--color-surface) 25%, var(--color-border) 50%, var(--color-surface) 75%);
-  background-size: 200% 100%;
-  animation: loadingShimmer 1.5s infinite;
+.track-focused-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #000;
+  background-color: var(--color-accent);
+  padding: 2px 8px;
+  border-radius: 4px;
 }
 
 /* Metrics Grid */

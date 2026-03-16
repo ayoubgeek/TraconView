@@ -1,6 +1,6 @@
 /**
  * @file FlightPanel.jsx
- * @description Slide-in detail panel for a selected aircraft, enriched with photos and routes.
+ * @description Slide-in detail panel for a selected aircraft, enriched with photos.
  */
 
 import { useEffect, useState } from 'react';
@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import { useSelection } from '../../context/SelectionContext';
 import { useAircraftById } from '../../context/AircraftDataContext';
 import { useAircraftEnrichment } from '../../hooks/useAircraftEnrichment';
+import { useAircraftTrack } from '../../hooks/useAircraftTrack';
 import FlightField from './FlightField';
 import {
   formatAltitude,
@@ -18,19 +19,20 @@ import {
   formatSquawk,
   formatPositionSource
 } from '../../utils/format';
-import { countryNameToFlag, airportToFlag } from '../../utils/airports';
+import { countryNameToFlag } from '../../utils/airports';
 import './FlightPanel.css';
-import { X, Plane, ExternalLink, Crosshair, Eye } from 'lucide-react';
+import { X, Plane, ExternalLink, Crosshair, Eye, Navigation } from 'lucide-react';
 
 export default function FlightPanel() {
   const { selectedAircraftId, clearSelection, isFocused, toggleFocus } = useSelection();
   const aircraft = useAircraftById(selectedAircraftId);
-  
+  const { track } = useAircraftTrack(selectedAircraftId);
+
   const [now, setNow] = useState(() => Date.now());
-  
+
   // Throttle the context aircraft object to avoid re-triggering enrichment hook rapid changes on tick
   const [stableAircraft, setStableAircraft] = useState(null);
-  
+
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
@@ -44,7 +46,7 @@ export default function FlightPanel() {
     }
   }, [aircraft, stableAircraft]);
 
-  const { photo, route, isLoadingPhoto, isLoadingRoute } = useAircraftEnrichment(stableAircraft);
+  const { photo, isLoadingPhoto } = useAircraftEnrichment(stableAircraft);
 
   // Swipe-to-dismiss for mobile
   useEffect(() => {
@@ -76,11 +78,6 @@ export default function FlightPanel() {
 
   if (!selectedAircraftId || !aircraft) return null;
 
-  const derivedRoute = aircraft.route || route;
-  const isRouteLoading = !aircraft.route && isLoadingRoute;
-
-  const originFlag = derivedRoute?.origin ? airportToFlag(derivedRoute.origin) : '';
-  const destFlag = derivedRoute?.destination ? airportToFlag(derivedRoute.destination) : '';
   const countryFlag = countryNameToFlag(aircraft.originCountry);
 
   return (
@@ -139,31 +136,18 @@ export default function FlightPanel() {
           </div>
         </div>
 
-        {/* Route Section */}
-        <div className="flight-panel-route-section">
-          {isRouteLoading ? (
-            <div className="route-loading skeleton"></div>
-          ) : derivedRoute && derivedRoute.origin && derivedRoute.destination ? (
-            <div className="route-display">
-              <div className="route-point">
-                {originFlag && <span className="route-flag">{originFlag}</span>}
-                <span className="route-code">{derivedRoute.origin}</span>
-                <span className="route-label">Origin</span>
-              </div>
-              <div className="route-arrow">
-                <Plane size={16} />
-                <div className="route-line"></div>
-              </div>
-              <div className="route-point">
-                {destFlag && <span className="route-flag">{destFlag}</span>}
-                <span className="route-code">{derivedRoute.destination}</span>
-                <span className="route-label">Destination</span>
-              </div>
-            </div>
-          ) : (
-            <div className="route-unknown">
-              <span>Route Unknown</span>
-            </div>
+        {/* Track Info Section */}
+        <div className="flight-panel-track-section">
+          <div className="track-info">
+            <Navigation size={14} className="track-icon" />
+            <span className="track-label">
+              {track.length > 1
+                ? `Tracking — ${track.length} positions recorded`
+                : 'Tracking — waiting for movement...'}
+            </span>
+          </div>
+          {isFocused && (
+            <span className="track-focused-badge">FOCUSED</span>
           )}
         </div>
 

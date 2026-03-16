@@ -1,71 +1,45 @@
 /**
  * @file useAircraftTrack.js
- * @description Hook to fetch and cache historical track points for a selected aircraft.
+ * @description Builds a live track from real-time aircraft position updates.
+ * Records each new position as data refreshes — no external API needed.
  */
 
 import { useState, useEffect, useRef } from 'react';
+import { useAircraftById } from '../context/AircraftDataContext';
+
+const MAX_TRACK_POINTS = 500;
 
 export function useAircraftTrack(icao24) {
+  const aircraft = useAircraftById(icao24);
   const [track, setTrack] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const cache = useRef(new Map());
+  const trackRef = useRef([]);
+  const lastPosRef = useRef(null);
 
+  // Reset track when aircraft changes
   useEffect(() => {
     if (!icao24) {
+      trackRef.current = [];
+      lastPosRef.current = null;
       setTrack([]);
-      setIsLoading(false);
-      return;
     }
-
-    // Check cache first
-    if (cache.current.has(icao24)) {
-      setTrack(cache.current.get(icao24));
-      return;
-    }
-
-    let isMounted = true;
-    setIsLoading(true);
-    setTrack([]); // clear immediately on new selection
-
-    async function fetchTrack() {
-      try {
-        const response = await fetch(`/api/opensky-proxy?_path=tracks/all&icao24=${icao24}&time=0`);
-        if (!response.ok) {
-          throw new Error('Track fetch failed');
-        }
-        const data = await response.json();
-        
-        if (isMounted) {
-          let coordinates = [];
-          if (data && data.path && Array.isArray(data.path)) {
-            // OpenSky path structure consists of [time, lat, lon, baro_alt, true_track, on_ground]
-            coordinates = data.path
-              .filter(p => p[1] !== null && p[2] !== null)
-              .map(p => [p[1], p[2]]);
-          }
-
-          cache.current.set(icao24, coordinates);
-          setTrack(coordinates);
-        }
-      } catch {
-        if (isMounted) {
-          // Failure sets an empty track and moves on gracefully
-          cache.current.set(icao24, []);
-          setTrack([]);
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    fetchTrack();
-
-    return () => {
-      isMounted = false;
-    };
   }, [icao24]);
 
-  return { track, isLoading };
+  // Accumulate positions as aircraft data updates
+  useEffect(() => {
+    if (!aircraft || !aircraft.lat || !aircraft.lng) return;
+
+    const pos = [aircraft.lat, aircraft.lng];
+    const last = lastPosRef.current;
+
+    // Skip if position hasn't changed (avoid duplicate points)
+    if (last && Math.abs(last[0] - pos[0]) < 0.0001 && Math.abs(last[1] - pos[1]) < 0.0001) {
+      return;
+    }
+
+    lastPosRef.current = pos;
+    trackRef.current = [...trackRef.current.slice(-MAX_TRACK_POINTS + 1), pos];
+    setTrack([...trackRef.current]);
+  }, [aircraft?.lat, aircraft?.lng]);
+
+  return { track, isLoading: false };
 }

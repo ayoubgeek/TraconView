@@ -15,7 +15,7 @@ export function SelectionProvider({ children }) {
 
   const selectAircraft = useCallback((icao24) => {
     setSelectedAircraftId(icao24);
-    setIsFocused(false);
+    setIsFocused(true);
   }, []);
 
   const clearSelection = useCallback(() => {
