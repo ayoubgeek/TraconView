@@ -4,8 +4,8 @@
   "framework": "vite",
   "rewrites": [
     {
-      "source": "/api/opensky/:match*",
-      "destination": "https://opensky-network.org/api/:match*"
+      "source": "/api/opensky/(.*)",
+      "destination": "https://opensky-network.org/api/$1"
     }
   ]
 }
