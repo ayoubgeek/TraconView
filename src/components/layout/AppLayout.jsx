@@ -51,7 +51,7 @@ export default function AppLayout({ header, sidebar, rightDrawer, children, anal
             ${leftPanelMode ? 'translate-x-0 w-80' : '-translate-x-full w-80 md:w-0'}
           `}
         >
-          <div className="w-80 h-full overflow-y-auto [&::-webkit-scrollbar]:hidden">
+          <div className="w-80 h-full overflow-y-auto hide-scrollbar custom-scrollbar">
             {/* Wrap sidebar contents in ErrorBoundary per T067 */}
             <ErrorBoundary fallback={<div className="p-2 text-atc-dim">Sidebar unavailable</div>}>
               {leftPanelMode === 'navigation' && sidebar}
