@@ -10,6 +10,7 @@ import AircraftMarker from '../map/AircraftMarker';
 import { useAircraftDataContext } from '../../context/AircraftDataContext';
 import { useAircraftData } from '../../hooks/useAircraftData';
 import { useSelection } from '../../context/SelectionContext';
+import SelectedAircraftTrail from '../map/SelectedAircraftTrail';
 import './RadarMap.css';
 
 function MapController() {
@@ -52,6 +53,8 @@ export default function RadarMap() {
           <span>Acquiring Signals...</span>
         </div>
       )}
+
+      <SelectedAircraftTrail />
 
       {Array.from(aircraft.values()).map(ac => (
         <AircraftMarker key={ac.icao24} aircraft={ac} />

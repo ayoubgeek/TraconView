@@ -14,6 +14,12 @@ vi.mock('../../src/context/AircraftDataContext', () => ({
   useAircraftById: vi.fn()
 }));
 
+vi.mock('../../src/hooks/useAircraftEnrichment', () => ({
+  useAircraftEnrichment: vi.fn()
+}));
+
+import { useAircraftEnrichment } from '../../src/hooks/useAircraftEnrichment';
+
 describe('FlightPanel', () => {
   const mockClearSelection = vi.fn();
 
@@ -22,6 +28,12 @@ describe('FlightPanel', () => {
     useSelection.mockReturnValue({
       selectedAircraftId: 'a1b2c3',
       clearSelection: mockClearSelection
+    });
+    useAircraftEnrichment.mockReturnValue({
+      photo: null,
+      route: null,
+      isLoadingPhoto: false,
+      isLoadingRoute: false
     });
   });
 
@@ -48,7 +60,8 @@ describe('FlightPanel', () => {
       squawk: '1234',
       positionSource: 'ADS-B',
       onGround: false,
-      originCountry: 'United States'
+      originCountry: 'United States',
+      lastContact: Math.round(Date.now() / 1000) - 5
     };
     useAircraftById.mockReturnValue(mockAc);
 
@@ -75,13 +88,21 @@ describe('FlightPanel', () => {
     const mockAc = {
       icao24: 'a1',
       callsign: 'SWA1',
-      route: { origin: 'SFO', destination: 'LAX' }
+      lastContact: Math.round(Date.now() / 1000)
     };
     useAircraftById.mockReturnValue(mockAc);
+    useAircraftEnrichment.mockReturnValue({
+      photo: null,
+      route: { origin: 'SFO', destination: 'LAX' },
+      isLoadingPhoto: false,
+      isLoadingRoute: false
+    });
 
     render(<FlightPanel />);
-    expect(screen.getByText('Route')).toBeDefined();
-    expect(screen.getByText('SFO → LAX')).toBeDefined();
+    expect(screen.getByText('SFO')).toBeDefined();
+    expect(screen.getByText('LAX')).toBeDefined();
+    expect(screen.getByText('Origin')).toBeDefined();
+    expect(screen.getByText('Destination')).toBeDefined();
   });
 
   it('renders null fields as "—"', () => {
