@@ -1,50 +1,30 @@
-import React, { Suspense, lazy } from 'react';
-import AppLayout from './components/layout/AppLayout';
-import TraconMap from './components/map/TraconMap';
-import ErrorBoundary from './components/ui/ErrorBoundary';
+/**
+ * @file App.jsx
+ * @description Root component connecting Contexts and the RadarMap.
+ */
 
-const StatsPanel = lazy(() => import('./components/panels/StatsPanel'));
-const SavedViewPanel = lazy(() => import('./components/panels/SavedViewPanel'));
-const AircraftDetailDrawer = lazy(() => import('./components/panels/AircraftDetailDrawer'));
+import React, { useState } from 'react';
+import { AircraftDataProvider } from './context/AircraftDataContext';
+import { ConnectionProvider } from './context/ConnectionContext';
+import { SelectionProvider } from './context/SelectionContext';
+import RadarMap from './components/RadarMap/RadarMap';
+import FlightPanel from './components/FlightPanel/FlightPanel';
+import StatusBadge from './components/StatusBadge/StatusBadge';
+import SettingsDrawer from './components/SettingsDrawer/SettingsDrawer';
 
-const PanelSkeleton = () => (
-  <div className="p-4 m-4 rounded animate-pulse bg-slate-800/20 md:bg-[#1A2235]/50 h-32 flex items-center justify-center text-slate-500 text-sm border border-slate-700/50">
-    Loading...
-  </div>
-);
+export default function App() {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-const PinnedFlightsList = lazy(() => import('./components/panels/PinnedFlightsList'));
-
-function App() {
   return (
-    <AppLayout
-      sidebar={
-        <div className="flex flex-col h-full bg-[#0A0F1A]">
-          <Suspense fallback={<PanelSkeleton />}>
-            <PinnedFlightsList />
-          </Suspense>
-          <Suspense fallback={<PanelSkeleton />}>
-            <SavedViewPanel />
-          </Suspense>
-          {/* StatsPanel is pinned to the bottom of the sidebar */}
-          <div className="mt-auto border-t border-slate-800 bg-[#0A0F1A]">
-            <ErrorBoundary fallback={<div className="p-4 text-atc-dim">Stats unavailable</div>}>
-              <Suspense fallback={<PanelSkeleton />}>
-                 <StatsPanel />
-              </Suspense>
-            </ErrorBoundary>
-          </div>
-        </div>
-      }
-      rightDrawer={
-        <Suspense fallback={<div className="h-full flex flex-col"><PanelSkeleton /></div>}>
-          <AircraftDetailDrawer />
-        </Suspense>
-      }
-    >
-      <TraconMap />
-    </AppLayout>
+    <AircraftDataProvider>
+      <ConnectionProvider>
+        <SelectionProvider>
+          <RadarMap />
+          <FlightPanel />
+          <StatusBadge onSettingsClick={() => setIsSettingsOpen(true)} />
+          <SettingsDrawer isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+        </SelectionProvider>
+      </ConnectionProvider>
+    </AircraftDataProvider>
   );
 }
-
-export default App;

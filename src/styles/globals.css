@@ -1,66 +1,54 @@
-@import "tailwindcss";
+/* src/styles/globals.css */
+:root {
+  --color-bg: #0A0F1A;
+  --color-surface: #1A2235;
+  --color-border: #2A364F;
+  --color-text: #E2E8F0;
+  --color-text-muted: #94A3B8;
+  --color-accent: #06B6D4;
+  --color-accent-glow: rgba(6, 182, 212, 0.4);
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+  --color-map-bg: #1A1A1A;
 
-@theme {
-  --color-radar-bg: #050510;
-  --color-radar-grid: #1A2235;
-  --color-atc-text: #E5E7EB;
-  --color-atc-green: #10B981;
-  --color-atc-dim: #6B7280;
-  
-  --color-critical: #EF4444; 
-  --color-high: #F97316; 
-  --color-medium: #EAB308; 
-  --color-low: #3B82F6; 
-  
-  --font-data: "JetBrains Mono", monospace;
-  --font-ui: "DM Sans", sans-serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
 }
 
-:root {
-  background-color: var(--color-radar-bg);
-  color: var(--color-atc-text);
-  font-family: var(--font-ui);
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  margin: 0;
-  padding: 0;
-  overflow: hidden; /* Full screen ATC radar app */
-}
-
-/* Map specific overrides for Leaflet */
-.leaflet-container {
-  background-color: var(--color-radar-bg) !important;
-  font-family: var(--font-ui) !important;
-}
-
-/* Hide leaflet attribution to keep it clean, but keep it in HTML if needed legally */
-.leaflet-control-attribution {
-  display: none !important;
-}
-
-@keyframes sweep {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.radar-sweep {
-  position: relative;
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-text);
   overflow: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
-.radar-sweep::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 150vw;
-  height: 150vw;
-  margin-top: -75vw;
-  margin-left: -75vw;
-  background: conic-gradient(from 0deg, transparent 0%, transparent 60%, rgba(16, 185, 129, 0.25) 100%);
-  border-radius: 50%;
-  animation: sweep 4s linear infinite;
-  pointer-events: none;
-  z-index: 100; /* Over the map, under panels */
+/* Scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
 }

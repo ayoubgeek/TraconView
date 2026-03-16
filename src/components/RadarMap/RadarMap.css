@@ -1,0 +1,100 @@
+/* RadarMap.css */
+.radar-map-container {
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--color-map-bg);
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+}
+
+.leaflet-container {
+  background: var(--color-map-bg) !important;
+  font-family: var(--font-sans);
+}
+
+.aircraft-div-icon {
+  background: none;
+  border: none;
+}
+
+.aircraft-icon-container {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s linear;
+  will-change: transform;
+}
+
+.aircraft-svg-wrapper {
+  color: var(--color-accent);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: box-shadow 0.2s ease, color 0.2s ease;
+}
+
+.aircraft-svg-wrapper:hover {
+  color: var(--color-text);
+  filter: drop-shadow(0 0 4px var(--color-accent));
+}
+
+.aircraft-svg-wrapper.selected {
+  color: #fff;
+  box-shadow: 0 0 0 2px var(--color-accent-glow), 0 0 10px var(--color-accent);
+  background: rgba(6, 182, 212, 0.2);
+}
+
+.aircraft-tooltip {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.leaflet-tooltip-top:before {
+  border-top-color: var(--color-border) !important;
+}
+
+.radar-map-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  background: rgba(15, 23, 42, 0.8);
+  padding: 16px 24px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  pointer-events: none;
+}
+
+.radar-map-loading .spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(6, 182, 212, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--color-accent);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

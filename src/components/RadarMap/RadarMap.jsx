@@ -1,0 +1,61 @@
+/**
+ * @file RadarMap.jsx
+ * @description Leaflet Map component with CartoDB Dark layer and Aircraft markers.
+ */
+
+import React from 'react';
+import { MapContainer, TileLayer, useMap, useMapEvents } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import AircraftMarker from '../map/AircraftMarker';
+import { useAircraftDataContext } from '../../context/AircraftDataContext';
+import { useAircraftData } from '../../hooks/useAircraftData';
+import { useSelection } from '../../context/SelectionContext';
+import './RadarMap.css';
+
+function MapController() {
+  const map = useMap();
+  useAircraftData(map);
+  return null;
+}
+
+function MapEventsHandler() {
+  const { clearSelection } = useSelection();
+  useMapEvents({
+    click() {
+      clearSelection();
+    }
+  });
+  return null;
+}
+
+export default function RadarMap() {
+  const { aircraft } = useAircraftDataContext();
+
+  return (
+    <MapContainer
+      center={[39.8283, -98.5795]}
+      zoom={5}
+      zoomControl={false}
+      className="radar-map-container"
+      minZoom={3}
+    >
+      <TileLayer
+        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+      />
+      <MapController />
+      <MapEventsHandler />
+      
+      {aircraft.size === 0 && (
+        <div className="radar-map-loading">
+          <div className="spinner"></div>
+          <span>Acquiring Signals...</span>
+        </div>
+      )}
+
+      {Array.from(aircraft.values()).map(ac => (
+        <AircraftMarker key={ac.icao24} aircraft={ac} />
+      ))}
+    </MapContainer>
+  );
+}
