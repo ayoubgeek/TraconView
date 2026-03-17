@@ -16,7 +16,7 @@ import {
   formatVertRate,
   formatSquawk
 } from '../../utils/format';
-import { countryNameToFlag, countryCodeToFlag } from '../../utils/airports';
+import { countryNameToFlag } from '../../utils/airports';
 import { callsignToAirline } from '../../utils/airlines';
 import './FlightPanel.css';
 import { X, Plane, ExternalLink, ShieldCheck, AlertTriangle } from 'lucide-react';
@@ -41,7 +41,7 @@ export default function FlightPanel() {
     }
   }, [aircraft, stableAircraft]);
 
-  const { photo, route, isLoadingPhoto } = useAircraftEnrichment(stableAircraft);
+  const { photo, isLoadingPhoto } = useAircraftEnrichment(stableAircraft);
 
   // Swipe-to-dismiss for mobile
   useEffect(() => {
@@ -126,54 +126,7 @@ export default function FlightPanel() {
           </div>
         </div>
 
-        {/* SECTION C: ROUTE BLOCK */}
-        {route && route.origin?.lat && route.destination?.lat && (
-          <div className="section-c-route">
-            <div className="route-node text-left">
-              <span className="route-flag">{countryCodeToFlag(route.origin.country)}</span>
-              <span className="route-iata">{route.origin.iata || route.origin.icao}</span>
-              <span className="route-city">{route.origin.city || route.origin.name}</span>
-              <span className="route-tz">{route.origin.tz || 'N/A'}</span>
-            </div>
-            
-            <div className="route-progress">
-              <div className="route-line-full"></div>
-              <div className="route-line-fill" style={{ width: '50%' }}></div>
-              <Plane size={14} className="route-plane-marker" style={{ left: '50%' }} />
-            </div>
 
-            <div className="route-node text-right">
-              <span className="route-flag">{countryCodeToFlag(route.destination.country)}</span>
-              <span className="route-iata">{route.destination.iata || route.destination.icao}</span>
-              <span className="route-city">{route.destination.city || route.destination.name}</span>
-              <span className="route-tz">{route.destination.tz || 'N/A'}</span>
-            </div>
-          </div>
-        )}
-
-        {/* SECTION D: SCHEDULE BLOCK */}
-        <div className="section-block">
-          <div className="schedule-grid">
-            <div className="schedule-col">
-              <span className="sched-label"></span>
-              <span className="sched-val-dim">Scheduled</span>
-              <span className="sched-val-dim">Actual/Est</span>
-              <span className="sched-val-dim">Status</span>
-            </div>
-            <div className="schedule-col">
-              <span className="sched-label">Departure</span>
-              <span className="sched-val">N/A</span>
-              <span className="sched-val">N/A</span>
-              <span className="sched-status neutral">Unknown</span>
-            </div>
-            <div className="schedule-col text-right">
-              <span className="sched-label">Arrival</span>
-              <span className="sched-val">N/A</span>
-              <span className="sched-val">N/A</span>
-              <span className="sched-status neutral">Unknown</span>
-            </div>
-          </div>
-        </div>
 
         {/* SECTION E: LIVE FLIGHT DATA */}
         <div className="section-block">

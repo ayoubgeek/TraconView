@@ -32,45 +32,4 @@ export async function fetchAircraftPhoto(icao24) {
   }
 }
 
-/**
- * Fetches route information from the OpenSky Network API.
- * @param {string} callsign - The flight callsign.
- * @returns {Promise<Object|null>} The route origin/destination or null if not found.
- */
-export async function fetchRouteInfo(callsign) {
-  if (!callsign) return null;
-  
-  // Callsigns from OpenSky are often padded with spaces
-  const cleanCallsign = callsign.trim();
-  if (!cleanCallsign) return null;
-
-  try {
-    const response = await fetch(`/api/opensky/routes?callsign=${cleanCallsign}`);
-    if (!response.ok) {
-      if (response.status === 404) return null;
-      throw new Error(`OpenSky Routes API error: ${response.status}`);
-    }
-    const data = await response.json();
-    if (data && data.route && data.route.length >= 2) {
-      // route usually looks like: ["EDDF", "EGLL"]
-      const originIcao = data.route[0];
-      const destIcao = data.route[data.route.length - 1];
-      
-      const { getAirportDetails } = await import('../utils/airports');
-      const originDetails = await getAirportDetails(originIcao);
-      const destDetails = await getAirportDetails(destIcao);
-
-      return {
-        origin: { icao: originIcao, ...originDetails },
-        destination: { icao: destIcao, ...destDetails }
-      };
-    }
-    // Alternatively the response format might be different, handle standard OpenSky route format:
-    // Some routes endpoints return object: { callsign: "...", route: ["...", "..."] }
-    // Or it might be the deprecated /api/routes?callsign=
-    return null;
-  } catch (error) {
-    console.warn(`Failed to fetch route for ${cleanCallsign}:`, error);
-    return null;
-  }
-}
+// OpenSky routes API is deprecated (returns 404). Route info is not available.
