@@ -31,15 +31,17 @@ PROMPT.md
 RULES.md
 .cursorrules
 .windsurfrules
-.agent/
-.specify/
-specs/
 .claude/
 .cursor/
 .windsurf/
 *.prompt.md
-PROMPT-*.md
 *_AGENT_*.md
+SETUP.md
+FIXES.md
+tasks.md
+.agent/
+.specify/
+specs/
 CLAUDE.md
 
 .env
