@@ -9,7 +9,7 @@
   [![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.2-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
   
   <h3>
-    <a href="https://traconview.vercel.app">Live Demo</a>
+    <a href="https://tracon-view.vercel.app/">Live Demo</a>
     <span> | </span>
     <a href="#installation">Installation</a>
     <span> | </span>
