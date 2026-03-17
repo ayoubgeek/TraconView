@@ -20,7 +20,8 @@
 <br />
 
 <div align="center">
-  <img src="docs/screenshot.png" alt="TraconView Screenshot" width="100%" style="border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.5);" />
+  <img src="docs/screen1.png" alt="TraconView Screenshot 1" width="48%" style="border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.5); display: inline-block; margin-right: 2%;" />
+  <img src="docs/screen2.png" alt="TraconView Screenshot 2" width="48%" style="border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.5); display: inline-block;" />
 </div>
 
 <br />
