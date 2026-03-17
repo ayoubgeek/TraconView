@@ -640,34 +640,17 @@ git push origin main
 
 ---
 
-## PHASE 6: Give Instructions to AI Agents
+## PHASE 6: Development Instructions
 
-Now the infrastructure is ready. Here's exactly how to run each agent.
+Now the infrastructure is ready. Here's exactly how to build the application logic and UI.
 
-### 6.1 — Opus Session (Backend + Logic)
+### 6.1 — Backend and Logic Development
 
-Open a new Opus session. Paste:
-
-```
-# Context
-I'm building TraconView — a live flight anomaly radar.
-The infrastructure is already set up:
-- GitHub repo: github.com/MY_USERNAME/traconview
-- Supabase project with Edge Function deployed (opensky-proxy)
-- Vercel auto-deploys from main branch
-- React + Vite + Tailwind scaffolded
-- Connection test passed: OpenSky data flows through Supabase to frontend
-
-# Spec
-[PASTE THE FULL TRACONVIEW-SPEC.md HERE]
-
-# Your Role
-You are the BACKEND + LOGIC engineer.
-You write: hooks, stores, data transformers, anomaly detection, utilities.
-You do NOT write UI components — Gemini handles that.
+Focus on core application functional logic.
+Write: hooks, stores, data transformers, anomaly detection, utilities.
 
 # Current Sprint: Sprint 1
-# Your Tasks:
+# Tasks:
 - O5: Build data transformer (OpenSky raw → Aircraft model)
   File: src/lib/transformers.js
 - O11: Build unit conversion utilities
@@ -686,39 +669,14 @@ You do NOT write UI components — Gemini handles that.
 - Poll every 15 seconds
 - Follow the exact Aircraft interface from the spec
 - Follow the exact anomaly rules from the spec
-- Export everything so Gemini's components can import them
+- Ensure broad module exports to allow UI components to import them safely.
 
-# Output
-Give me each file complete and ready to copy-paste.
-One file at a time. Start with src/lib/formatters.js
-```
+### 6.2 — Frontend Layout and Styling Execution
 
-### 6.2 — Gemini Session (Frontend + Design)
-
-Open a Gemini session. Paste:
-
-```
-# Context
-I'm building TraconView — a live flight anomaly radar.
-The infrastructure is set up: React + Vite + Tailwind + Leaflet.
-The backend hooks and stores are being written by another engineer.
-
-# Spec
-[PASTE THE FULL TRACONVIEW-SPEC.md HERE]
-
-# Your Role
-You are the FRONTEND + DESIGN engineer.
-You write: React components, Leaflet map, CSS, animations, layout.
-You do NOT write data logic — Opus handles that.
-
-# What You Can Assume Exists (written by Opus):
-- src/store/flightStore.js — Zustand store with:
-  - useFlightStore() returns: { aircraft, anomalies, region, setRegion, isLoading, error, rateLimitRemaining }
-- src/lib/constants.js — REGIONS object, color constants
-- src/lib/formatters.js — formatAltitude(), formatSpeed(), formatVerticalRate()
+Execute the UI assembly with these layout specifications:
 
 # Current Sprint: Sprint 1
-# Your Tasks:
+# Tasks:
 - G3: Build TraconMap.jsx — Leaflet map with CartoDB dark_matter tiles
   Must use Canvas renderer for performance
 - G4: Build AircraftLayer.jsx — render aircraft as CircleMarkers
@@ -736,21 +694,15 @@ You do NOT write data logic — Opus handles that.
 - ATC dark scope aesthetic
 - Leaflet CSS must be imported: import 'leaflet/dist/leaflet.css'
 
-# Output
-Give me each component complete and ready to copy-paste.
-Start with TraconMap.jsx
-```
+### 6.3 — Component Integration
 
-### 6.3 — After Both Agents Finish
-
-Once you have all files from both Opus and Gemini:
+Once all logic and component files have been completely reviewed:
 
 1. Copy each file to the correct path in your project
 2. Wire them together in `src/App.jsx`:
 
 ```jsx
-// This is the main integration point — ask Opus to write this
-// after all hooks and components exist
+// This is the main integration point
 import { useEffect } from 'react'
 import { useFlightStore } from './store/flightStore'
 import Header from './components/ui/Header'
@@ -763,19 +715,18 @@ import AlertSidebar from './components/panels/AlertSidebar'
 4. If it works: push and deploy
 ```bash
 git add .
-git commit -m "Sprint 1: Live aircraft dots on dark map"
+git commit -m "feat: Sprint 1 - Live aircraft dots on dark map"
 git push origin main
 ```
 5. Vercel auto-deploys → check traconview.vercel.app
 
 ### 6.4 — Run the Code Review
 
-After deploying, use the **TRACONVIEW-REVIEW-PROMPT.md** file:
-1. Open new Opus session
-2. Paste the Code Reviewer prompt + the spec + all your source files
-3. It outputs FIXES.md
-4. Apply fixes
-5. Push again
+After deploying, perform a thorough code review.
+1. Review the components against the spec.
+2. Output a FIXES.md with any discovered issues.
+3. Apply fixes.
+4. Push again.
 
 ---
 
