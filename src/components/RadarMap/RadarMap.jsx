@@ -10,7 +10,7 @@ import AircraftMarker from '../map/AircraftMarker';
 import { useAircraftDataContext } from '../../context/AircraftDataContext';
 import { useAircraftData } from '../../hooks/useAircraftData';
 import { useSelection } from '../../context/SelectionContext';
-import SelectedAircraftTrail from '../map/SelectedAircraftTrail';
+import FlightRoute from '../map/FlightRoute';
 import './RadarMap.css';
 
 function SelectedAircraftTracker() {
@@ -82,7 +82,7 @@ export default function RadarMap() {
       )}
 
       <SelectedAircraftTracker />
-      <SelectedAircraftTrail />
+      {selectedAircraftId && <FlightRoute icao24={selectedAircraftId} />}
 
       {visibleAircraft.map(ac => (
         <AircraftMarker key={ac.icao24} aircraft={ac} />

@@ -76,8 +76,6 @@ describe('FlightPanel', () => {
     expect(screen.getByText('270°')).toBeDefined();
     expect(screen.getByText('0 fpm')).toBeDefined();
     expect(screen.getByText('1234')).toBeDefined();
-    expect(screen.getByText('ADS-B')).toBeDefined();
-    expect(screen.getByText('Airborne')).toBeDefined();
     expect(screen.getByText(/United States/)).toBeDefined();
 
     // No route section details should be present
@@ -93,7 +91,10 @@ describe('FlightPanel', () => {
     useAircraftById.mockReturnValue(mockAc);
     useAircraftEnrichment.mockReturnValue({
       photo: null,
-      route: { origin: 'SFO', destination: 'LAX' },
+      route: { 
+        origin: { iata: 'SFO', city: 'San Francisco', country: 'US', lat: 37 }, 
+        destination: { iata: 'LAX', city: 'Los Angeles', country: 'US', lat: 34 } 
+      },
       isLoadingPhoto: false,
       isLoadingRoute: false
     });
@@ -101,8 +102,8 @@ describe('FlightPanel', () => {
     render(<FlightPanel />);
     expect(screen.getByText('SFO')).toBeDefined();
     expect(screen.getByText('LAX')).toBeDefined();
-    expect(screen.getByText('ORIGIN')).toBeDefined();
-    expect(screen.getByText('DEST')).toBeDefined();
+    expect(screen.getByText('San Francisco')).toBeDefined();
+    expect(screen.getByText('Los Angeles')).toBeDefined();
   });
 
   it('renders null fields as "—"', () => {

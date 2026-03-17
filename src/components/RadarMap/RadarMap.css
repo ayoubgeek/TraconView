@@ -144,3 +144,36 @@
     stroke-dashoffset: -100;
   }
 }
+
+.airport-div-icon {
+  background: transparent;
+  border: none;
+}
+
+.route-airport-marker {
+  width: 8px;
+  height: 8px;
+  background-color: #fff;
+  border: 2px solid var(--color-accent);
+  border-radius: 50%;
+  position: relative;
+  box-shadow: 0 0 4px rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.route-airport-marker span {
+  position: absolute;
+  top: -20px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  background: var(--color-bg-elevated);
+  padding: 2px 4px;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}

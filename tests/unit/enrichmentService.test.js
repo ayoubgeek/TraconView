@@ -79,8 +79,8 @@ describe('enrichmentService', () => {
 
       const result = await fetchRouteInfo('BAW1  ');
       expect(result).toEqual({
-        origin: 'KJFK',
-        destination: 'LHR'
+        origin: { icao: 'KJFK' },
+        destination: { icao: 'LHR' }
       });
       expect(global.fetch).toHaveBeenCalledWith('/api/opensky/routes?callsign=BAW1');
     });

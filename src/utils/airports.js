@@ -159,3 +159,42 @@ export function airportToFlag(icaoCode) {
   const cc = ICAO_PREFIX_MAP[upper.substring(0, 2)] || ICAO_PREFIX_MAP[upper.substring(0, 1)];
   return cc ? countryCodeToFlag(cc) : '';
 }
+
+let airportsCache = null;
+
+/**
+ * Fetch and cache the static airports DB.
+ * @returns {Promise<Object>}
+ */
+export async function getAirportsDB() {
+  if (airportsCache) return airportsCache;
+  try {
+    const res = await fetch('/data/airports.json');
+    if (!res.ok) return {};
+    airportsCache = await res.json();
+    return airportsCache;
+  } catch (err) {
+    console.warn('Failed to load airports.json DB');
+    return {};
+  }
+}
+
+/**
+ * Lookup airport by ICAO or IATA code.
+ * @param {string} code 
+ * @returns {Promise<Object|null>}
+ */
+export async function getAirportDetails(code) {
+  if (!code) return null;
+  const db = await getAirportsDB();
+  const up = code.toUpperCase();
+  
+  if (db[up]) return db[up]; // Found by ICAO direct key
+  
+  // Search by IATA if 3 letters
+  if (up.length === 3) {
+    const found = Object.values(db).find(a => a.iata === up);
+    if (found) return found;
+  }
+  return null;
+}

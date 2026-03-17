@@ -53,9 +53,16 @@ export async function fetchRouteInfo(callsign) {
     const data = await response.json();
     if (data && data.route && data.route.length >= 2) {
       // route usually looks like: ["EDDF", "EGLL"]
+      const originIcao = data.route[0];
+      const destIcao = data.route[data.route.length - 1];
+      
+      const { getAirportDetails } = await import('../utils/airports');
+      const originDetails = await getAirportDetails(originIcao);
+      const destDetails = await getAirportDetails(destIcao);
+
       return {
-        origin: data.route[0],
-        destination: data.route[data.route.length - 1]
+        origin: { icao: originIcao, ...originDetails },
+        destination: { icao: destIcao, ...destDetails }
       };
     }
     // Alternatively the response format might be different, handle standard OpenSky route format:

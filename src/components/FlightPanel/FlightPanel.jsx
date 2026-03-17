@@ -8,25 +8,22 @@ import React, { useEffect, useState } from 'react';
 import { useSelection } from '../../context/SelectionContext';
 import { useAircraftById } from '../../context/AircraftDataContext';
 import { useAircraftEnrichment } from '../../hooks/useAircraftEnrichment';
-import { useAircraftTrack } from '../../hooks/useAircraftTrack';
 import FlightField from './FlightField';
 import {
   formatAltitude,
   formatSpeed,
   formatHeading,
   formatVertRate,
-  formatSquawk,
-  formatPositionSource
+  formatSquawk
 } from '../../utils/format';
-import { countryNameToFlag } from '../../utils/airports';
+import { countryNameToFlag, countryCodeToFlag } from '../../utils/airports';
 import { callsignToAirline } from '../../utils/airlines';
 import './FlightPanel.css';
-import { X, Plane, ExternalLink, Crosshair, Eye, Navigation, AlertTriangle, ShieldAlert } from 'lucide-react';
+import { X, Plane, ExternalLink, ShieldCheck, AlertTriangle } from 'lucide-react';
 
 export default function FlightPanel() {
-  const { selectedAircraftId, clearSelection, isFocused, toggleFocus } = useSelection();
+  const { selectedAircraftId, clearSelection } = useSelection();
   const aircraft = useAircraftById(selectedAircraftId);
-  const { track } = useAircraftTrack(selectedAircraftId);
 
   const [now, setNow] = useState(() => Date.now());
   const [stableAircraft, setStableAircraft] = useState(null);
@@ -44,13 +41,15 @@ export default function FlightPanel() {
     }
   }, [aircraft, stableAircraft]);
 
-  const { photo, route, isLoadingPhoto, isLoadingRoute } = useAircraftEnrichment(stableAircraft);
+  const { photo, route, isLoadingPhoto } = useAircraftEnrichment(stableAircraft);
 
   // Swipe-to-dismiss for mobile
   useEffect(() => {
     if (!selectedAircraftId) return;
 
     let touchStartY = 0;
+    const panel = document.getElementById('flight-panel');
+    
     const handleTouchStart = (e) => {
       touchStartY = e.changedTouches[0].screenY;
     };
@@ -61,7 +60,6 @@ export default function FlightPanel() {
       }
     };
 
-    const panel = document.getElementById('flight-panel');
     if (panel) {
       panel.addEventListener('touchstart', handleTouchStart);
       panel.addEventListener('touchend', handleTouchEnd);
@@ -76,41 +74,31 @@ export default function FlightPanel() {
 
   if (!selectedAircraftId || !aircraft) return null;
 
-  const countryFlag = countryNameToFlag(aircraft.originCountry);
-  const airlineName = callsignToAirline(aircraft.callsign);
+  const airlineName = callsignToAirline(aircraft.callsign) || 'Unknown Operator';
   const secondsAgo = Math.max(0, Math.round(now / 1000) - aircraft.lastContact);
   
   const isEmergency = aircraft.squawk === '7700';
   const isLossOfComms = aircraft.squawk === '7600';
+  const hasAnomaly = isEmergency || isLossOfComms || secondsAgo > 120;
 
   return (
     <div id="flight-panel" className="flight-panel animate-slide-right">
-      <div className="flight-panel-actions">
-        <button
-          aria-label={isFocused ? 'Show all aircraft' : 'Track this aircraft only'}
-          className={`flight-panel-action-btn ${isFocused ? 'active' : ''}`}
-          onClick={toggleFocus}
-          title={isFocused ? 'Show all aircraft' : 'Track this aircraft only'}
-        >
-          {isFocused ? <Eye size={18} /> : <Crosshair size={18} />}
-        </button>
-        <button
-          aria-label="Close"
-          className="flight-panel-close"
-          onClick={clearSelection}
-        >
-          <X size={24} />
-        </button>
-      </div>
+      <button
+        aria-label="Close"
+        className="flight-panel-close"
+        onClick={clearSelection}
+      >
+        <X size={20} />
+      </button>
 
       {/* SECTION A: HERO HEADER */}
-      <div className="flight-panel-hero">
+      <div className="section-a-hero">
         {isLoadingPhoto ? (
           <div className="hero-loading skeleton"></div>
         ) : photo && photo.thumbnail ? (
           <div className="hero-image-wrapper">
             <img src={photo.thumbnail} alt={`Aircraft ${aircraft.icao24}`} className="hero-image" />
-            <div className="hero-attribution">
+            <div className="hero-credit">
               <span>Photo: {photo.photographer}</span>
               <a href={photo.link} target="_blank" rel="noreferrer" title="View on Planespotters.net">
                 <ExternalLink size={10} />
@@ -120,121 +108,122 @@ export default function FlightPanel() {
         ) : (
           <div className="hero-placeholder">
             <Plane size={48} className="hero-placeholder-icon" />
-            <span className="hero-placeholder-text">NO PHOTO AVAILABLE</span>
+            <span className="hero-placeholder-text">{airlineName.toUpperCase()}</span>
           </div>
         )}
       </div>
 
       <div className="flight-panel-content">
         
-        {/* IDENTIFICATION BLOCK */}
-        <div className="section-header">
-          <div className="header-primary">
-            <h2 className="header-callsign">{aircraft.callsign || aircraft.icao24.toUpperCase()}</h2>
-            <div className="header-tags">
-              {airlineName && <span className="tag-airline">{airlineName}</span>}
-              <span className="tag-icao24">{aircraft.icao24.toUpperCase()}</span>
-            </div>
+        {/* SECTION B: FLIGHT HEADER */}
+        <div className="section-b-header">
+          <div className="header-topline">
+            <h2 className="flight-callsign">{aircraft.callsign || aircraft.icao24.toUpperCase()}</h2>
+            <span className="aircraft-type-badge">N/A</span>
           </div>
-          <div className="header-secondary">
-            <span className="header-operator">{airlineName || 'Operator Unknown'}</span>
-            <span className="header-country">{countryFlag} {aircraft.originCountry || 'Unknown'}</span>
+          <div className="header-tagline">
+            <span className="airline-name">{airlineName}</span>
           </div>
         </div>
 
-        {/* SECTION B: ROUTE BLOCK */}
-        <div className="section-route">
-          {isLoadingRoute ? (
-             <div className="route-loading skeleton"></div>
-          ) : route ? (
-             <div className="route-display">
-                <div className="route-node">
-                   <span className="route-iata">{route.origin}</span>
-                   <span className="route-label">ORIGIN</span>
-                </div>
-                <div className="route-progress">
-                   <div className="route-line-bar">
-                     <Plane size={16} className="route-plane-icon" style={{ left: '50%' }} />
-                   </div>
-                </div>
-                <div className="route-node">
-                   <span className="route-iata">{route.destination}</span>
-                   <span className="route-label">DEST</span>
-                </div>
-             </div>
-          ) : (
-             <div className="route-unavailable">
-                <span>Route data unavailable</span>
-             </div>
-          )}
-        </div>
+        {/* SECTION C: ROUTE BLOCK */}
+        {route && route.origin?.lat && route.destination?.lat && (
+          <div className="section-c-route">
+            <div className="route-node text-left">
+              <span className="route-flag">{countryCodeToFlag(route.origin.country)}</span>
+              <span className="route-iata">{route.origin.iata || route.origin.icao}</span>
+              <span className="route-city">{route.origin.city || route.origin.name}</span>
+              <span className="route-tz">{route.origin.tz || 'N/A'}</span>
+            </div>
+            
+            <div className="route-progress">
+              <div className="route-line-full"></div>
+              <div className="route-line-fill" style={{ width: '50%' }}></div>
+              <Plane size={14} className="route-plane-marker" style={{ left: '50%' }} />
+            </div>
 
-        {/* SECTION C: LIVE FLIGHT STATUS GRID */}
-        <div className="section-block section-live-metrics">
-          <div className="section-title">
-             <Navigation size={14} /> LIVE FLIGHT DATA
-          </div>
-          <div className="metrics-grid">
-            <div className="metric-box highlight">
-              <span className="metric-label">ALTITUDE</span>
-              <span className="metric-value">{formatAltitude(aircraft.altitudeFt)}</span>
+            <div className="route-node text-right">
+              <span className="route-flag">{countryCodeToFlag(route.destination.country)}</span>
+              <span className="route-iata">{route.destination.iata || route.destination.icao}</span>
+              <span className="route-city">{route.destination.city || route.destination.name}</span>
+              <span className="route-tz">{route.destination.tz || 'N/A'}</span>
             </div>
-            <div className="metric-box highlight">
-              <span className="metric-label">GROUND SPEED</span>
-              <span className="metric-value">{formatSpeed(aircraft.speedKnots)}</span>
-            </div>
-            <div className="metric-box">
-              <span className="metric-label">HEADING</span>
-              <span className="metric-value">{formatHeading(aircraft.heading)}</span>
-            </div>
-            <div className="metric-box">
-              <span className="metric-label">VERT SPEED</span>
-              <span className="metric-value">{formatVertRate(aircraft.vertRateFpm)}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* SECTION D: AIRCRAFT INFO & GEOMETRY */}
-        <div className="section-block">
-          <div className="info-grid">
-            <FlightField label="Squawk" value={formatSquawk(aircraft.squawk)} />
-            <FlightField label="Status" value={aircraft.onGround === null ? '—' : (aircraft.onGround ? 'On Ground' : 'Airborne')} />
-            <FlightField label="Latitude" value={aircraft.lat != null ? aircraft.lat.toFixed(4) : '—'} />
-            <FlightField label="Longitude" value={aircraft.lng != null ? aircraft.lng.toFixed(4) : '—'} />
-            <FlightField label="Source" value={formatPositionSource(aircraft.positionSource)} />
-            <FlightField label="Last Contact" value={`${secondsAgo}s ago`} />
-          </div>
-        </div>
-
-        {/* SECTION E: CONTEXT / ALERTS */}
-        {(isEmergency || isLossOfComms || secondsAgo > 60 || (track && track.length > 5)) && (
-          <div className="section-block section-context">
-            {isEmergency && (
-              <div className="alert-box critical">
-                <ShieldAlert size={16} />
-                <span><strong>7700 SQUAWK</strong> General Emergency Declared</span>
-              </div>
-            )}
-            {isLossOfComms && (
-              <div className="alert-box warning">
-                <AlertTriangle size={16} />
-                <span><strong>7600 SQUAWK</strong> Radio Failure / Loss of Comms</span>
-              </div>
-            )}
-            {secondsAgo > 60 && !isEmergency && !isLossOfComms && (
-              <div className="alert-box muted">
-                <AlertTriangle size={16} />
-                <span>Stale Data: Position hasn't updated in {secondsAgo}s</span>
-              </div>
-            )}
-            {track && track.length > 5 && secondsAgo <= 60 && !isEmergency && !isLossOfComms && (
-              <div className="alert-box success">
-                <Navigation size={16} />
-                <span>Live tracking active • {track.length} positions recorded</span>
-              </div>
-            )}
           </div>
         )}
+
+        {/* SECTION D: SCHEDULE BLOCK */}
+        <div className="section-block">
+          <div className="schedule-grid">
+            <div className="schedule-col">
+              <span className="sched-label"></span>
+              <span className="sched-val-dim">Scheduled</span>
+              <span className="sched-val-dim">Actual/Est</span>
+              <span className="sched-val-dim">Status</span>
+            </div>
+            <div className="schedule-col">
+              <span className="sched-label">Departure</span>
+              <span className="sched-val">N/A</span>
+              <span className="sched-val">N/A</span>
+              <span className="sched-status neutral">Unknown</span>
+            </div>
+            <div className="schedule-col text-right">
+              <span className="sched-label">Arrival</span>
+              <span className="sched-val">N/A</span>
+              <span className="sched-val">N/A</span>
+              <span className="sched-status neutral">Unknown</span>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION E: LIVE FLIGHT DATA */}
+        <div className="section-block">
+          <div className="flight-grid-2col">
+            <FlightField label="ALTITUDE" value={formatAltitude(aircraft.altitudeFt)} />
+            <FlightField label="GROUND SPEED" value={formatSpeed(aircraft.speedKnots)} />
+            <FlightField label="VERTICAL SPEED" value={formatVertRate(aircraft.vertRateFpm)} />
+            <FlightField label="HEADING / TRACK" value={formatHeading(aircraft.heading)} />
+            <FlightField label="DISTANCE FLOWN" value="N/A" />
+            <FlightField label="DISTANCE REMAINING" value="N/A" />
+            <FlightField label="ETA" value="N/A" />
+          </div>
+        </div>
+
+        {/* SECTION F: AIRCRAFT DETAILS */}
+        <div className="section-block">
+          <div className="flight-grid-2col">
+            <FlightField label="AIRCRAFT TYPE" value="N/A" />
+            <FlightField label="REGISTRATION" value="N/A" />
+            <FlightField label="COUNTRY OF REG." value={`${countryNameToFlag(aircraft.originCountry)} ${aircraft.originCountry || 'Unknown'}`} />
+            <FlightField label="CATEGORY" value="Passenger" />
+            <FlightField label="AIRLINE" value={airlineName} />
+            <FlightField label="SQUAWK" value={formatSquawk(aircraft.squawk)} />
+          </div>
+        </div>
+
+        {/* SECTION G: ANOMALY ALERT */}
+        <div className="section-block">
+          {hasAnomaly ? (
+            <div className={`anomaly-card ${isEmergency ? 'red' : 'amber'}`}>
+              <AlertTriangle size={18} />
+              <div className="anomaly-text">
+                <strong>{isEmergency ? 'Critical Anomaly Detected' : 'Warning Detected'}</strong>
+                <span>
+                  {isEmergency ? 'Squawk 7700 (General Emergency)' : 
+                   isLossOfComms ? 'Squawk 7600 (Radio Failure)' : 
+                   `Stale position data (${secondsAgo}s+)`}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="anomaly-card green">
+              <ShieldCheck size={18} />
+              <div className="anomaly-text">
+                <strong>No anomalies detected</strong>
+                <span>Flight data appears nominal</span>
+              </div>
+            </div>
+          )}
+        </div>
         
       </div>
     </div>
